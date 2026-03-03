@@ -1,0 +1,72 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "React Wheel Picker",
+  "projectDescription": "iOS-like wheel picker for React with smooth inertia scrolling and infinite loop support",
+  "theme": "palm",
+  "primaryColor": "#00d3f3",
+  "lightColor": "#7dd3fc",
+  "darkColor": "#0891b2",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": [
+          "introduction",
+          "installation",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Core Concepts",
+        "pages": [
+          "concepts/components",
+          "concepts/styling",
+          "concepts/accessibility",
+          "concepts/keyboard-navigation"
+        ]
+      },
+      {
+        "group": "API Reference",
+        "pages": [
+          "api/wheel-picker",
+          "api/wheel-picker-wrapper",
+          "api/types"
+        ]
+      },
+      {
+        "group": "Examples",
+        "pages": [
+          "examples/basic-usage",
+          "examples/multiple-pickers",
+          "examples/infinite-scrolling",
+          "examples/disabled-options",
+          "examples/custom-styling"
+        ]
+      },
+      {
+        "group": "Advanced",
+        "pages": [
+          "advanced/migration-guide",
+          "advanced/troubleshooting"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "iOS-like wheel picker with 3D perspective",
+    "Smooth inertia scrolling with touch and mouse support",
+    "Infinite loop scrolling",
+    "Full keyboard navigation and type-ahead search",
+    "Unstyled components for complete customization",
+    "shadcn/ui integration support"
+  ],
+  "publicApiSurface": [
+    "WheelPicker",
+    "WheelPickerWrapper",
+    "WheelPickerOption",
+    "WheelPickerProps",
+    "WheelPickerValue",
+    "WheelPickerClassNames",
+    "WheelPickerWrapperProps"
+  ]
+}
