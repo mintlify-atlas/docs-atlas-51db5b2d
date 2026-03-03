@@ -1,0 +1,357 @@
+---
+title: Disabled options
+description: Disable specific options and control selection behavior
+---
+
+You can disable individual options in the wheel picker using the `disabled` property on `WheelPickerOption`.
+
+## Basic disabled options
+
+Mark options as disabled to prevent them from being selected:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const sizeOptions: WheelPickerOption[] = [
+  { label: "Extra Small", value: "xs" },
+  { label: "Small", value: "sm" },
+  { label: "Medium", value: "md" },
+  { label: "Large", value: "lg", disabled: true }, // Out of stock
+  { label: "Extra Large", value: "xl", disabled: true }, // Out of stock
+];
+
+export function SizePicker() {
+  const [size, setSize] = useState("md");
+
+  return (
+    <WheelPickerWrapper className="w-56 rounded-md border bg-white dark:bg-zinc-950">
+      <WheelPicker
+        options={sizeOptions}
+        value={size}
+        onValueChange={setSize}
+        classNames={{
+          optionItem: "text-zinc-400 dark:text-zinc-500 data-[disabled]:opacity-40 data-[disabled]:line-through",
+          highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+          highlightItem: "data-[disabled]:opacity-40",
+        }}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+<Info>
+  Disabled options are marked with the `[data-disabled]` attribute, allowing you to style them differently using CSS or Tailwind.
+</Info>
+
+## Automatic skip behavior
+
+When scrolling to a disabled option, the picker automatically finds and scrolls to the nearest enabled option:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const dateOptions: WheelPickerOption<number>[] = [
+  { label: "1", value: 1 },
+  { label: "2", value: 2 },
+  { label: "3", value: 3, disabled: true }, // Weekend
+  { label: "4", value: 4, disabled: true }, // Weekend
+  { label: "5", value: 5 },
+  { label: "6", value: 6 },
+  { label: "7", value: 7 },
+];
+
+export function WeekdayPicker() {
+  const [day, setDay] = useState(1);
+
+  return (
+    <div>
+      <WheelPickerWrapper className="w-32 rounded-md border bg-white dark:bg-zinc-950">
+        <WheelPicker<number>
+          options={dateOptions}
+          value={day}
+          onValueChange={setDay}
+          classNames={{
+            optionItem: "text-zinc-400 dark:text-zinc-500 data-[disabled]:opacity-30",
+            highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+          }}
+        />
+      </WheelPickerWrapper>
+      <p className="mt-4 text-center text-sm text-zinc-600">
+        Try scrolling to day 3 or 4 - they're disabled, so the picker will automatically select the nearest enabled day.
+      </p>
+    </div>
+  );
+}
+```
+
+## How it works
+
+The picker uses the `findNearestEnabledIndex` function to skip disabled options:
+
+```tsx
+// From source: packages/react-wheel-picker/src/index.tsx:38-89
+const findNearestEnabledIndex = <T extends WheelPickerValue>(
+  startIndex: number,
+  direction: 1 | -1,
+  options: WheelPickerOption<T>[],
+  infinite: boolean
+): number => {
+  if (options.length === 0) return startIndex;
+
+  // Check if all items are disabled
+  const hasEnabledItem = options.some((opt) => !opt.disabled);
+  if (!hasEnabledItem) return startIndex;
+
+  const searchInDirection = (dir: 1 | -1): number => {
+    let currentIndex = startIndex;
+    let attempts = 0;
+    const maxAttempts = options.length;
+
+    while (attempts < maxAttempts) {
+      currentIndex = currentIndex + dir;
+
+      if (infinite) {
+        // Wrap around for infinite mode
+        currentIndex =
+          ((currentIndex % options.length) + options.length) % options.length;
+      } else {
+        // Clamp for non-infinite mode
+        if (currentIndex < 0 || currentIndex >= options.length) {
+          return -1; // No enabled item found in this direction
+        }
+      }
+
+      if (!options[currentIndex]?.disabled) {
+        return currentIndex;
+      }
+
+      attempts++;
+    }
+
+    return -1;
+  };
+
+  // First, search in the given direction
+  let nearestIndex = searchInDirection(direction);
+
+  // If not found, reverse and search the other direction
+  if (nearestIndex === -1) {
+    nearestIndex = searchInDirection((direction * -1) as 1 | -1);
+  }
+
+  // If still not found, return the start index
+  return nearestIndex === -1 ? startIndex : nearestIndex;
+};
+```
+
+The function:
+1. Searches in the scroll direction for the nearest enabled option
+2. If none found, searches in the opposite direction
+3. Handles both infinite and non-infinite modes
+4. Wraps around in infinite mode
+
+<Note>
+  The search direction is based on the scroll direction - scrolling down searches downward first, scrolling up searches upward first.
+</Note>
+
+## Dynamic disabled states
+
+You can dynamically enable or disable options based on application state:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+type TimeSlot = {
+  hour: number;
+  available: boolean;
+};
+
+const timeSlots: TimeSlot[] = [
+  { hour: 9, available: false },
+  { hour: 10, available: true },
+  { hour: 11, available: true },
+  { hour: 12, available: false },
+  { hour: 13, available: true },
+  { hour: 14, available: true },
+  { hour: 15, available: false },
+  { hour: 16, available: true },
+];
+
+export function AppointmentPicker() {
+  const [selectedHour, setSelectedHour] = useState(10);
+
+  const hourOptions: WheelPickerOption<number>[] = timeSlots.map((slot) => ({
+    label: `${slot.hour}:00`,
+    value: slot.hour,
+    disabled: !slot.available,
+    textValue: `${slot.hour}:00 ${slot.available ? 'Available' : 'Booked'}`,
+  }));
+
+  return (
+    <div>
+      <WheelPickerWrapper className="w-56 rounded-md border bg-white dark:bg-zinc-950">
+        <WheelPicker<number>
+          options={hourOptions}
+          value={selectedHour}
+          onValueChange={setSelectedHour}
+          classNames={{
+            optionItem: "text-zinc-400 dark:text-zinc-500 data-[disabled]:opacity-30 data-[disabled]:line-through",
+            highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+          }}
+        />
+      </WheelPickerWrapper>
+      <p className="mt-4 text-center">
+        Available slot: {selectedHour}:00
+      </p>
+    </div>
+  );
+}
+```
+
+## Styling disabled options
+
+You can style disabled options using the `[data-disabled]` attribute:
+
+### Tailwind CSS
+
+```tsx
+<WheelPicker
+  options={options}
+  value={value}
+  onValueChange={setValue}
+  classNames={{
+    optionItem: "data-[disabled]:opacity-40 data-[disabled]:line-through data-[disabled]:cursor-not-allowed",
+    highlightItem: "data-[disabled]:opacity-30",
+  }}
+/>
+```
+
+### CSS
+
+```css
+[data-rwp-option][data-disabled] {
+  opacity: 0.4;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+[data-rwp-highlight-item][data-disabled] {
+  opacity: 0.3;
+}
+```
+
+## Click behavior
+
+Clicking on a disabled option does nothing - the picker won't scroll to it:
+
+```tsx
+// From source: packages/react-wheel-picker/src/index.tsx:467-473
+// Do nothing if clicking on a disabled item
+if (options[normalizedIndex]?.disabled) {
+  return;
+}
+
+scrollByStep(stepsToScroll);
+```
+
+<Warning>
+  If you programmatically set `value` to a disabled option's value, the picker will automatically find and select the nearest enabled option.
+</Warning>
+
+## Keyboard navigation with disabled options
+
+When navigating with arrow keys, the picker automatically skips disabled options:
+
+```tsx
+// From source: packages/react-wheel-picker/src/index.tsx:839-849
+// If target is disabled, find nearest enabled item
+if (options[normalizedTarget]?.disabled) {
+  const nearestEnabled = findNearestEnabledIndex(
+    normalizedTarget,
+    direction,
+    options,
+    infiniteProp
+  );
+  // Calculate step from current to nearest enabled
+  targetIndex =
+    currentIndex + direction + (nearestEnabled - normalizedTarget);
+}
+```
+
+This ensures users can navigate smoothly without getting stuck on disabled options.
+
+## Edge cases
+
+<Accordion title="All options disabled">
+  If all options are disabled, the picker remains on the current selection and doesn't prevent scrolling. However, this is not a recommended use case.
+
+  ```tsx
+  const allDisabled: WheelPickerOption[] = [
+    { label: "A", value: "a", disabled: true },
+    { label: "B", value: "b", disabled: true },
+    { label: "C", value: "c", disabled: true },
+  ];
+
+  // Not recommended - provide at least one enabled option
+  <WheelPicker options={allDisabled} />
+  ```
+</Accordion>
+
+<Accordion title="First option disabled">
+  If the first option (or default value) is disabled, the picker automatically selects the first enabled option:
+
+  ```tsx
+  const options: WheelPickerOption[] = [
+    { label: "Disabled", value: "disabled", disabled: true },
+    { label: "Enabled", value: "enabled" },
+    { label: "Another", value: "another" },
+  ];
+
+  // Will default to "enabled" instead of "disabled"
+  <WheelPicker options={options} defaultValue="disabled" />
+  ```
+</Accordion>
+
+<Accordion title="Consecutive disabled options">
+  The picker handles multiple consecutive disabled options correctly, skipping all of them to find the nearest enabled option:
+
+  ```tsx
+  const options: WheelPickerOption[] = [
+    { label: "1", value: "1" },
+    { label: "2", value: "2", disabled: true },
+    { label: "3", value: "3", disabled: true },
+    { label: "4", value: "4", disabled: true },
+    { label: "5", value: "5" },
+  ];
+
+  // Scrolling from 1 to 5 will skip options 2, 3, and 4
+  <WheelPicker options={options} />
+  ```
+</Accordion>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Custom styling" icon="palette" href="/examples/custom-styling">
+    Learn how to fully customize the appearance
+  </Card>
+  <Card title="Accessibility" icon="universal-access" href="/concepts/accessibility">
+    Understand accessibility features and best practices
+  </Card>
+</CardGroup>

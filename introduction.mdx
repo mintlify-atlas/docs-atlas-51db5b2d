@@ -1,0 +1,173 @@
+---
+title: React Wheel Picker
+description: iOS-like wheel picker for React with smooth inertia scrolling and infinite loop support
+---
+
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.png"
+  alt="React Wheel Picker Hero Light"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.png"
+  alt="React Wheel Picker Hero Dark"
+/>
+
+## Welcome to React Wheel Picker
+
+A beautiful iOS-style wheel picker component for React with natural touch scrolling, smooth inertia effects, and infinite loop support. Perfect for building date pickers, selection menus, and any interface requiring an intuitive scrolling wheel.
+
+<CardGroup cols={2}>
+  <Card
+    title="Installation"
+    icon="download"
+    href="/installation"
+  >
+    Get started with npm, yarn, or pnpm installation
+  </Card>
+  <Card
+    title="Quick Start"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Build your first wheel picker in minutes
+  </Card>
+  <Card
+    title="Examples"
+    icon="code"
+    href="/examples/basic-usage"
+  >
+    Explore real-world examples and demos
+  </Card>
+  <Card
+    title="API Reference"
+    icon="book"
+    href="/api/wheel-picker"
+  >
+    Complete API documentation and type definitions
+  </Card>
+</CardGroup>
+
+## Key Features
+
+<AccordionGroup>
+  <Accordion icon="hand-pointer" title="Natural Touch Scrolling">
+    Smooth inertia scrolling with physics-based deceleration that feels just like iOS native pickers. Supports both touch and mouse interactions with drag gestures.
+  </Accordion>
+
+  <Accordion icon="infinity" title="Infinite Loop Support">
+    Enable seamless infinite scrolling for options that should wrap around. Perfect for time pickers and circular selections.
+  </Accordion>
+
+  <Accordion icon="palette" title="Fully Customizable Styling">
+    Unstyled components with complete control over appearance. Style with Tailwind CSS, CSS modules, or any styling solution. Includes data attributes and className props for flexible styling.
+  </Accordion>
+
+  <Accordion icon="keyboard" title="Keyboard Navigation">
+    Full keyboard support with arrow keys for scrolling, Home/End for jumping to first/last items, and type-ahead search for quick navigation.
+  </Accordion>
+
+  <Accordion icon="universal-access" title="Accessibility First">
+    Built with accessibility in mind. Proper focus management, keyboard navigation, and ARIA attributes for screen readers.
+  </Accordion>
+
+  <Accordion icon="bolt" title="Easy Integration">
+    Install via shadcn/ui CLI for quick setup, or use the primitives package for full control. Works with Next.js, Vite, and any React setup.
+  </Accordion>
+</AccordionGroup>
+
+## Simple Example
+
+Here's a basic example showing how easy it is to create a wheel picker:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const frameworks: WheelPickerOption[] = [
+  { label: "Next.js", value: "nextjs" },
+  { label: "Vite", value: "vite" },
+  { label: "Remix", value: "remix" },
+  { label: "Astro", value: "astro" },
+  { label: "Gatsby", value: "gatsby" },
+];
+
+export function FrameworkPicker() {
+  const [value, setValue] = useState("nextjs");
+
+  return (
+    <WheelPickerWrapper>
+      <WheelPicker
+        options={frameworks}
+        value={value}
+        onValueChange={setValue}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+## Why React Wheel Picker?
+
+<CardGroup cols={3}>
+  <Card title="Performance" icon="gauge-high">
+    Optimized for smooth 60fps animations with efficient rendering
+  </Card>
+  <Card title="TypeScript" icon="code">
+    Fully typed with comprehensive TypeScript definitions
+  </Card>
+  <Card title="Framework Agnostic" icon="puzzle-piece">
+    Works with Next.js, Vite, Remix, or any React setup
+  </Card>
+  <Card title="Zero Dependencies" icon="feather">
+    Lightweight with no external runtime dependencies
+  </Card>
+  <Card title="Controlled & Uncontrolled" icon="sliders">
+    Supports both controlled and uncontrolled component patterns
+  </Card>
+  <Card title="Active Development" icon="wrench">
+    Regularly updated with new features and improvements
+  </Card>
+</CardGroup>
+
+## Get Started
+
+<Steps>
+  <Step title="Install the package">
+    Choose your preferred installation method:
+    ```bash
+    npx shadcn add @ncdai/wheel-picker
+    ```
+    or
+    ```bash
+    npm install @ncdai/react-wheel-picker
+    ```
+  </Step>
+
+  <Step title="Import and use">
+    Add the wheel picker to your component:
+    ```tsx
+    import { WheelPicker, WheelPickerWrapper } from "@ncdai/react-wheel-picker";
+    ```
+  </Step>
+
+  <Step title="Customize">
+    Style it to match your design system with classNames or CSS
+  </Step>
+</Steps>
+
+## Community & Support
+
+- **GitHub**: [ncdai/react-wheel-picker](https://github.com/ncdai/react-wheel-picker)
+- **Demo**: [react-wheel-picker.chanhdai.com](https://react-wheel-picker.chanhdai.com)
+- **Issues**: [Report bugs or request features](https://github.com/ncdai/react-wheel-picker/issues)
+- **Sponsor**: [Support the project](https://github.com/sponsors/ncdai)
+
+<Card title="Ready to build?" icon="rocket" href="/installation">
+  Continue to installation to get started with React Wheel Picker
+</Card>

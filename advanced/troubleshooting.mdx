@@ -1,0 +1,927 @@
+---
+title: Troubleshooting Guide
+description: Common issues and solutions for React Wheel Picker
+---
+
+## Installation Issues
+
+<AccordionGroup>
+
+<Accordion title="Cannot find module '@ncdai/react-wheel-picker'">
+
+**Problem:** TypeScript or your bundler can't find the package.
+
+**Solution:**
+
+1. Verify the package is installed:
+   ```bash
+   npm list @ncdai/react-wheel-picker
+   ```
+
+2. If not installed, install it:
+   ```bash
+   npm install @ncdai/react-wheel-picker
+   ```
+
+3. Clear your build cache:
+   ```bash
+   # For Next.js
+   rm -rf .next
+   
+   # For Vite
+   rm -rf node_modules/.vite
+   
+   # For Create React App
+   rm -rf node_modules/.cache
+   ```
+
+4. Restart your development server
+
+</Accordion>
+
+<Accordion title="Peer dependency warnings for React">
+
+**Problem:** npm warns about React version mismatch.
+
+**Solution:**
+
+React Wheel Picker requires React 16.8 or higher. Check your React version:
+
+```bash
+npm list react
+```
+
+If you have an older version, upgrade:
+
+```bash
+npm install react@latest react-dom@latest
+```
+
+For React 19 RC:
+
+```bash
+npm install react@rc react-dom@rc
+```
+
+</Accordion>
+
+</AccordionGroup>
+
+## CSS and Styling Issues
+
+<AccordionGroup>
+
+<Accordion title="Styles not applying - picker looks broken">
+
+**Problem:** The wheel picker appears unstyled or broken.
+
+**Solution:**
+
+1. Ensure you've imported the CSS file:
+   ```tsx
+   import '@ncdai/react-wheel-picker/style.css';
+   ```
+
+2. Import it in your app's entry point:
+   - **Next.js**: `app/layout.tsx` or `pages/_app.tsx`
+   - **Vite**: `src/main.tsx`
+   - **Create React App**: `src/index.tsx`
+
+3. Verify the import path is correct:
+   ```tsx
+   // Both work
+   import '@ncdai/react-wheel-picker/style.css';
+   import '@ncdai/react-wheel-picker/dist/style.css';
+   ```
+
+4. Check your bundler configuration supports CSS imports
+
+</Accordion>
+
+<Accordion title="CSS import error in Next.js">
+
+**Problem:** Next.js shows "Global CSS cannot be imported from files other than your Custom App"
+
+**Solution:**
+
+Import the CSS in your root layout or `_app` file:
+
+**App Router (Next.js 13+):**
+
+```tsx title="app/layout.tsx"
+import '@ncdai/react-wheel-picker/style.css';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+**Pages Router (Next.js 12 and below):**
+
+```tsx title="pages/_app.tsx"
+import '@ncdai/react-wheel-picker/style.css';
+import type { AppProps } from 'next/app';
+
+export default function App({ Component, pageProps }: AppProps) {
+  return <Component {...pageProps} />;
+}
+```
+
+</Accordion>
+
+<Accordion title="Fade effect not visible at edges">
+
+**Problem:** The top and bottom fade effect (mask) isn't showing.
+
+**Solution:**
+
+The fade uses CSS `mask-image`. Some older browsers don't support this property.
+
+1. Check browser compatibility:
+   - Chrome/Edge: 120+
+   - Firefox: 53+
+   - Safari: 15.4+
+
+2. For older browsers, use a gradient overlay:
+
+```css
+[data-rwp] {
+  position: relative;
+}
+
+[data-rwp]::before,
+[data-rwp]::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 20%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-rwp]::before {
+  top: 0;
+  background: linear-gradient(to bottom, white, transparent);
+}
+
+[data-rwp]::after {
+  bottom: 0;
+  background: linear-gradient(to top, white, transparent);
+}
+```
+
+</Accordion>
+
+<Accordion title="Custom styles not overriding defaults">
+
+**Problem:** Your custom CSS classes aren't applying.
+
+**Solution:**
+
+1. Use `classNames` prop instead of inline styles:
+
+```tsx
+<WheelPicker
+  classNames={{
+    optionItem: "custom-option",
+    highlightWrapper: "custom-highlight",
+    highlightItem: "custom-highlight-item",
+  }}
+/>
+```
+
+2. Increase CSS specificity:
+
+```css
+/* Instead of */
+.custom-option { color: red; }
+
+/* Use */
+[data-rwp-option].custom-option { color: red; }
+```
+
+3. Use `!important` as a last resort:
+
+```css
+.custom-option {
+  color: red !important;
+}
+```
+
+</Accordion>
+
+</AccordionGroup>
+
+## TypeScript Issues
+
+<AccordionGroup>
+
+<Accordion title="Type error: Property 'textValue' does not exist">
+
+**Problem:** TypeScript error when using `textValue` on older versions.
+
+**Solution:**
+
+The `textValue` property was added in v1.1.0. Upgrade to the latest version:
+
+```bash
+npm install @ncdai/react-wheel-picker@latest
+```
+
+Or remove `textValue` if you can't upgrade:
+
+```tsx
+// Instead of
+{ label: <span>Next.js</span>, value: "nextjs", textValue: "Next.js" }
+
+// Use string labels
+{ label: "Next.js", value: "nextjs" }
+```
+
+</Accordion>
+
+<Accordion title="Type error: Property 'disabled' does not exist">
+
+**Problem:** TypeScript error when using `disabled` property.
+
+**Solution:**
+
+The `disabled` property was added in v1.2.0. Upgrade:
+
+```bash
+npm install @ncdai/react-wheel-picker@latest
+```
+
+</Accordion>
+
+<Accordion title="Generic type errors with option values">
+
+**Problem:** TypeScript complains about mismatched value types.
+
+**Solution:**
+
+Explicitly type your options and state:
+
+```tsx
+// For string values (default)
+const options: WheelPickerOption<string>[] = [
+  { label: "One", value: "1" },
+];
+const [value, setValue] = useState<string>("1");
+
+// For number values
+const numOptions: WheelPickerOption<number>[] = [
+  { label: "One", value: 1 },
+];
+const [numValue, setNumValue] = useState<number>(1);
+```
+
+Ensure value types match:
+
+```tsx
+// ❌ Wrong - mixing types
+const options: WheelPickerOption<string>[] = [
+  { label: "One", value: 1 }, // Error: number not assignable to string
+];
+
+// ✅ Correct
+const options: WheelPickerOption<number>[] = [
+  { label: "One", value: 1 },
+];
+```
+
+</Accordion>
+
+<Accordion title="Cannot find type definitions">
+
+**Problem:** TypeScript can't find type definitions.
+
+**Solution:**
+
+1. Verify the package is installed:
+   ```bash
+   npm list @ncdai/react-wheel-picker
+   ```
+
+2. Check your `tsconfig.json` includes `node_modules`:
+   ```json
+   {
+     "compilerOptions": {
+       "moduleResolution": "node",
+       "typeRoots": ["./node_modules/@types"]
+     }
+   }
+   ```
+
+3. Restart your TypeScript server in VS Code:
+   - Press `Cmd/Ctrl + Shift + P`
+   - Select "TypeScript: Restart TS Server"
+
+</Accordion>
+
+</AccordionGroup>
+
+## Behavior Issues
+
+<AccordionGroup>
+
+<Accordion title="Picker not scrolling smoothly on mobile">
+
+**Problem:** Touch scrolling feels laggy or unresponsive.
+
+**Solution:**
+
+1. Ensure you're not preventing default touch events elsewhere:
+
+```tsx
+// ❌ Avoid
+document.addEventListener('touchstart', (e) => e.preventDefault());
+
+// ✅ Be specific
+document.addEventListener('touchstart', (e) => {
+  if (!e.target.closest('[data-rwp]')) {
+    e.preventDefault();
+  }
+});
+```
+
+2. Adjust `dragSensitivity`:
+
+```tsx
+<WheelPicker
+  dragSensitivity={2} // Lower for smoother scrolling (default: 3)
+/>
+```
+
+3. Check for conflicting touch handlers:
+   - Remove `touch-action: none` from parent elements
+   - Ensure no other libraries are capturing touch events
+
+</Accordion>
+
+<Accordion title="Infinite scroll not working">
+
+**Problem:** Setting `infinite={true}` doesn't create an infinite loop.
+
+**Solution:**
+
+1. Verify you're passing the prop correctly:
+
+```tsx
+<WheelPicker
+  options={options}
+  infinite={true} // Must be explicitly set
+/>
+```
+
+2. Ensure you have enough options:
+   - Minimum 3-4 options recommended
+   - With fewer options, the effect may not be noticeable
+
+3. Check `visibleCount` prop:
+   - Must be a multiple of 4
+   - Default is 20
+
+```tsx
+<WheelPicker
+  infinite={true}
+  visibleCount={20} // Must be multiple of 4
+/>
+```
+
+</Accordion>
+
+<Accordion title="Selected value not updating">
+
+**Problem:** The picker doesn't reflect the current value.
+
+**Solution:**
+
+1. Use controlled mode correctly:
+
+```tsx
+const [value, setValue] = useState("initial");
+
+<WheelPicker
+  value={value}
+  onValueChange={setValue} // Don't forget this!
+  options={options}
+/>;
+```
+
+2. Or use uncontrolled mode:
+
+```tsx
+<WheelPicker
+  defaultValue="initial"
+  onValueChange={(newValue) => console.log(newValue)}
+  options={options}
+/>;
+```
+
+3. Ensure the value exists in options:
+
+```tsx
+const options = [
+  { label: "One", value: "1" },
+  { label: "Two", value: "2" },
+];
+
+// ❌ Wrong - "3" doesn't exist
+const [value, setValue] = useState("3");
+
+// ✅ Correct
+const [value, setValue] = useState("1");
+```
+
+</Accordion>
+
+<Accordion title="Keyboard navigation not working">
+
+**Problem:** Arrow keys don't navigate options.
+
+**Solution:**
+
+1. Ensure the picker is focused:
+   - Click on the picker
+   - Or use `autoFocus` on a wrapper element
+
+2. Check for conflicting keyboard handlers:
+
+```tsx
+// ❌ Avoid capturing arrow keys globally
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowUp') e.preventDefault();
+});
+
+// ✅ Let the picker handle its own keys
+```
+
+3. Verify the picker isn't disabled:
+
+```tsx
+// Ensure the container isn't disabled
+<div>
+  <WheelPicker options={options} />
+</div>
+```
+
+</Accordion>
+
+<Accordion title="Type-ahead search not finding options">
+
+**Problem:** Typing doesn't jump to matching options.
+
+**Solution:**
+
+1. For `ReactNode` labels, add `textValue`:
+
+```tsx
+const options: WheelPickerOption[] = [
+  {
+    label: <span>🚀 Next.js</span>,
+    value: "nextjs",
+    textValue: "Next.js", // Required for search
+  },
+];
+```
+
+2. Ensure the picker is focused
+
+3. Type quickly - there's a 500ms timeout between characters:
+   - "n" → "e" → "x" finds "Next.js"
+   - "n" → (wait 500ms) → "e" searches for "e", not "ne"
+
+4. Only enabled options are searchable:
+
+```tsx
+// Disabled options are skipped in search
+const options = [
+  { label: "Next.js", value: "nextjs" },
+  { label: "Nuxt", value: "nuxt", disabled: true }, // Skipped
+];
+```
+
+</Accordion>
+
+<Accordion title="Disabled options are still selectable">
+
+**Problem:** Clicking or scrolling to disabled options selects them.
+
+**Solution:**
+
+1. Upgrade to v1.2.0 or later:
+
+```bash
+npm install @ncdai/react-wheel-picker@latest
+```
+
+2. Ensure you're using the `disabled` property correctly:
+
+```tsx
+const options: WheelPickerOption[] = [
+  { label: "Enabled", value: "1" },
+  { label: "Disabled", value: "2", disabled: true },
+];
+```
+
+3. Verify your CSS doesn't override pointer events:
+
+```css
+/* ❌ Don't override this */
+[data-disabled] {
+  pointer-events: auto !important; /* Breaks disabled state */
+}
+
+/* ✅ Style appearance only */
+[data-disabled] {
+  opacity: 0.4;
+}
+```
+
+</Accordion>
+
+</AccordionGroup>
+
+## Performance Issues
+
+<AccordionGroup>
+
+<Accordion title="Picker feels laggy with many options">
+
+**Problem:** Performance degrades with 100+ options.
+
+**Solution:**
+
+1. Reduce `visibleCount` for better performance:
+
+```tsx
+<WheelPicker
+  visibleCount={12} // Lower than default 20
+  options={largeOptionsList}
+/>
+```
+
+2. Use `infinite={false}` if you don't need infinite scrolling:
+
+```tsx
+<WheelPicker
+  infinite={false} // Better performance
+  options={largeOptionsList}
+/>
+```
+
+3. Simplify option labels:
+
+```tsx
+// ❌ Complex labels
+{ label: <ComplexComponent />, value: "1" }
+
+// ✅ Simple labels
+{ label: "Option 1", value: "1" }
+```
+
+4. Memoize your options:
+
+```tsx
+const options = useMemo(
+  () => [
+    { label: "One", value: "1" },
+    // ... many options
+  ],
+  [] // Only create once
+);
+```
+
+</Accordion>
+
+<Accordion title="Memory leak warnings in React DevTools">
+
+**Problem:** React warns about memory leaks or unmounted components.
+
+**Solution:**
+
+1. Ensure you're on v1.0.17 or later (includes cleanup fixes):
+
+```bash
+npm install @ncdai/react-wheel-picker@latest
+```
+
+2. Properly clean up event listeners in parent components:
+
+```tsx
+useEffect(() => {
+  const handler = () => { /* ... */ };
+  window.addEventListener('resize', handler);
+  
+  return () => window.removeEventListener('resize', handler);
+}, []);
+```
+
+3. Avoid creating options inside render:
+
+```tsx
+// ❌ Recreates on every render
+function MyComponent() {
+  return <WheelPicker options={[{ label: "A", value: "a" }]} />;
+}
+
+// ✅ Stable reference
+const OPTIONS = [{ label: "A", value: "a" }];
+
+function MyComponent() {
+  return <WheelPicker options={OPTIONS} />;
+}
+```
+
+</Accordion>
+
+</AccordionGroup>
+
+## Browser Compatibility
+
+<AccordionGroup>
+
+<Accordion title="Not working in Safari">
+
+**Problem:** Wheel picker doesn't render or scroll properly in Safari.
+
+**Solution:**
+
+1. Check Safari version - requires Safari 15.4+ for full support
+
+2. Ensure webkit prefixes are added (postcss/autoprefixer handles this):
+
+```css
+[data-rwp] {
+  -webkit-mask-image: linear-gradient(...);
+  mask-image: linear-gradient(...);
+}
+```
+
+3. Test in Safari's responsive design mode
+
+4. Check for `touch-action` conflicts:
+
+```css
+/* Add to parent if needed */
+.picker-container {
+  touch-action: pan-y;
+}
+```
+
+</Accordion>
+
+<Accordion title="3D transform issues in older browsers">
+
+**Problem:** The wheel doesn't render in 3D in older browsers.
+
+**Solution:**
+
+The wheel requires CSS 3D transforms. Minimum browser versions:
+
+- Chrome/Edge: 36+
+- Firefox: 16+
+- Safari: 9+
+- iOS Safari: 9+
+- Android Chrome: 36+
+
+For older browsers, consider:
+
+1. Show a fallback `<select>` element
+2. Use a feature detection library
+3. Display a "browser not supported" message
+
+```tsx
+function WheelPickerWithFallback({ options, value, onValueChange }) {
+  const [supports3D] = useState(() => {
+    const el = document.createElement('div');
+    return 'WebkitPerspective' in el.style || 'perspective' in el.style;
+  });
+
+  if (!supports3D) {
+    return (
+      <select value={value} onChange={(e) => onValueChange(e.target.value)}>
+        {options.map(opt => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+    );
+  }
+
+  return <WheelPicker options={options} value={value} onValueChange={onValueChange} />;
+}
+```
+
+</Accordion>
+
+</AccordionGroup>
+
+## Framework-Specific Issues
+
+<AccordionGroup>
+
+<Accordion title="Next.js: Hydration mismatch error">
+
+**Problem:** Next.js shows hydration mismatch between server and client.
+
+**Solution:**
+
+1. Use dynamic import with SSR disabled:
+
+```tsx
+import dynamic from 'next/dynamic';
+
+const WheelPicker = dynamic(
+  () => import('@ncdai/react-wheel-picker').then(mod => mod.WheelPicker),
+  { ssr: false }
+);
+```
+
+2. Or use the `"use client"` directive (App Router):
+
+```tsx
+"use client";
+
+import { WheelPicker } from '@ncdai/react-wheel-picker';
+```
+
+3. Ensure initial value matches between server and client:
+
+```tsx
+// ❌ Wrong - Math.random() differs between server/client
+const [value, setValue] = useState(options[Math.random() * options.length].value);
+
+// ✅ Correct - static initial value
+const [value, setValue] = useState(options[0].value);
+```
+
+</Accordion>
+
+<Accordion title="Remix: Document is not defined error">
+
+**Problem:** Remix throws "document is not defined" during SSR.
+
+**Solution:**
+
+1. Use `ClientOnly` component:
+
+```tsx
+import { ClientOnly } from 'remix-utils/client-only';
+
+export default function MyRoute() {
+  return (
+    <ClientOnly fallback={<div>Loading...</div>}>
+      {() => <WheelPicker options={options} />}
+    </ClientOnly>
+  );
+}
+```
+
+2. Or lazy load the component:
+
+```tsx
+import { lazy, Suspense } from 'react';
+
+const WheelPicker = lazy(() =>
+  import('@ncdai/react-wheel-picker').then(mod => ({ default: mod.WheelPicker }))
+);
+
+export default function MyRoute() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <WheelPicker options={options} />
+    </Suspense>
+  );
+}
+```
+
+</Accordion>
+
+<Accordion title="Vite: CSS import order issues">
+
+**Problem:** CSS isn't loading in the correct order with Vite.
+
+**Solution:**
+
+1. Import the library CSS before your custom CSS:
+
+```tsx title="src/main.tsx"
+import '@ncdai/react-wheel-picker/style.css'; // Library CSS first
+import './index.css'; // Your CSS second
+```
+
+2. Use CSS layers for better control:
+
+```css title="src/index.css"
+@layer base, library, custom;
+
+@layer library {
+  @import '@ncdai/react-wheel-picker/style.css';
+}
+
+@layer custom {
+  [data-rwp-option] {
+    /* Your overrides */
+  }
+}
+```
+
+</Accordion>
+
+</AccordionGroup>
+
+## Multiple Picker Issues
+
+<AccordionGroup>
+
+<Accordion title="Multiple pickers not aligned correctly">
+
+**Problem:** When using multiple pickers, they don't line up horizontally.
+
+**Solution:**
+
+1. Ensure all pickers have the same `optionItemHeight`:
+
+```tsx
+<WheelPickerWrapper>
+  <WheelPicker optionItemHeight={30} {...hourProps} />
+  <WheelPicker optionItemHeight={30} {...minuteProps} />
+  <WheelPicker optionItemHeight={30} {...secondProps} />
+</WheelPickerWrapper>
+```
+
+2. Use consistent `visibleCount`:
+
+```tsx
+const config = { visibleCount: 20, optionItemHeight: 30 };
+
+<WheelPickerWrapper>
+  <WheelPicker {...config} {...hourProps} />
+  <WheelPicker {...config} {...minuteProps} />
+</WheelPickerWrapper>
+```
+
+3. Apply equal flex widths if needed:
+
+```tsx
+<WheelPickerWrapper className="grid grid-cols-3">
+  <WheelPicker {...hourProps} />
+  <WheelPicker {...minuteProps} />
+  <WheelPicker {...secondProps} />
+</WheelPickerWrapper>
+```
+
+</Accordion>
+
+<Accordion title="Arrow keys not switching between pickers">
+
+**Problem:** Left/Right arrow keys don't move focus between pickers in a group.
+
+**Solution:**
+
+1. Ensure all pickers are wrapped in `WheelPickerWrapper`:
+
+```tsx
+// ✅ Correct - enables focus management
+<WheelPickerWrapper>
+  <WheelPicker {...picker1} />
+  <WheelPicker {...picker2} />
+</WheelPickerWrapper>
+
+// ❌ Wrong - no wrapper
+<div>
+  <WheelPicker {...picker1} />
+  <WheelPicker {...picker2} />
+</div>
+```
+
+2. Verify keyboard navigation is enabled (v1.1.0+):
+
+```bash
+npm install @ncdai/react-wheel-picker@latest
+```
+
+3. Make sure pickers aren't in separate wrapper components
+
+</Accordion>
+
+</AccordionGroup>
+
+## Still Having Issues?
+
+If you're still experiencing problems:
+
+1. Check the [GitHub Issues](https://github.com/ncdai/react-wheel-picker/issues) for similar problems
+2. Review the [Getting Started guide](/getting-started) for setup instructions
+3. See the [Migration Guide](/advanced/migration-guide) if upgrading from an older version
+4. Open a new issue with:
+   - Your React version
+   - Your package version
+   - A minimal reproduction
+   - Browser and OS information

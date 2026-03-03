@@ -1,0 +1,385 @@
+---
+title: Migration Guide
+description: Guide for upgrading React Wheel Picker between versions and React compatibility
+---
+
+## Version Compatibility
+
+React Wheel Picker supports React 16.8 and above, including React 19. The library uses hooks and requires React 16.8+ as a minimum version.
+
+### Supported React Versions
+
+- React 16.8+
+- React 17.x
+- React 18.x
+- React 19.x (including RC versions)
+
+## Upgrading to v1.2.0
+
+Version 1.2.0 introduces disabled option support. This is a **non-breaking** change that adds new functionality.
+
+### What's New
+
+- New `disabled` property on `WheelPickerOption` type
+- Automatic skipping of disabled items during navigation
+- Visual feedback via `data-disabled` attribute
+- Smart selection of nearest enabled option
+
+### Migration Steps
+
+<Steps>
+
+<Step>Update the package</Step>
+
+```bash
+npm install @ncdai/react-wheel-picker@latest
+```
+
+<Step>Add disabled options (optional)</Step>
+
+If you want to disable certain options, add the `disabled` property:
+
+```tsx
+const options: WheelPickerOption[] = [
+  { label: "Option 1", value: "1" },
+  { label: "Option 2", value: "2", disabled: true }, // Disabled
+  { label: "Option 3", value: "3" },
+];
+```
+
+<Step>Update your CSS (optional)</Step>
+
+Style disabled options using the `data-disabled` attribute:
+
+```css
+[data-rwp-option][data-disabled],
+[data-rwp-highlight-item][data-disabled] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+```
+
+Or with Tailwind CSS:
+
+```tsx
+classNames={{
+  optionItem: "data-disabled:opacity-40",
+  highlightItem: "data-disabled:opacity-40",
+}}
+```
+
+</Steps>
+
+<Info>
+Existing implementations continue to work without changes. All options are enabled by default.
+</Info>
+
+## Upgrading to v1.1.0
+
+Version 1.1.0 introduces keyboard navigation and type-ahead search support.
+
+### Breaking Changes
+
+<Warning>
+There are **no breaking changes** in this version. All new features are additive.
+</Warning>
+
+### What's New
+
+- Keyboard navigation (Arrow keys, Home, End)
+- Type-ahead search for quick option selection
+- Focus management with visual indicators
+- New `textValue` property for custom search text
+- New `data-rwp-focused` attribute
+
+### Migration Steps
+
+<Steps>
+
+<Step>Update the package</Step>
+
+```bash
+npm install @ncdai/react-wheel-picker@^1.1.0
+```
+
+<Step>Add custom search text (optional)</Step>
+
+If your options use `ReactNode` labels, provide a `textValue` for search:
+
+```tsx
+const options: WheelPickerOption[] = [
+  {
+    label: <span>🚀 Next.js</span>,
+    value: "nextjs",
+    textValue: "Next.js", // Used for type-ahead search
+  },
+  {
+    label: <span>⚡ Vite</span>,
+    value: "vite",
+    textValue: "Vite",
+  },
+];
+```
+
+<Step>Style focus indicators (optional)</Step>
+
+Customize the focus appearance using the `data-rwp-focused` attribute:
+
+```css
+[data-rwp-highlight-wrapper][data-rwp-focused] {
+  box-shadow: inset 0 0 0 2px #3b82f6;
+}
+```
+
+Or with Tailwind CSS:
+
+```tsx
+classNames={{
+  highlightWrapper: "data-rwp-focused:ring-2 data-rwp-focused:ring-blue-500",
+}}
+```
+
+</Steps>
+
+## Upgrading to v1.0.18
+
+Version 1.0.18 adds support for generic option values.
+
+### What Changed
+
+The `WheelPickerOption` and `WheelPickerProps` types now support generics:
+
+**Before (v1.0.17 and earlier):**
+
+```tsx
+const options: WheelPickerOption[] = [
+  { label: "One", value: "1" },
+  { label: "Two", value: "2" },
+];
+
+const [value, setValue] = useState("1");
+```
+
+**After (v1.0.18+):**
+
+```tsx
+// String values (default)
+const options: WheelPickerOption<string>[] = [
+  { label: "One", value: "1" },
+  { label: "Two", value: "2" },
+];
+
+const [value, setValue] = useState<string>("1");
+
+// Or use number values
+const numericOptions: WheelPickerOption<number>[] = [
+  { label: "One", value: 1 },
+  { label: "Two", value: 2 },
+];
+
+const [numValue, setNumValue] = useState<number>(1);
+```
+
+<Info>
+No migration needed - string values work by default. The generic type enhances TypeScript support.
+</Info>
+
+## Upgrading to v1.0.16
+
+Version 1.0.16 adds the `scrollSensitivity` prop.
+
+### Migration Steps
+
+<Steps>
+
+<Step>Update the package</Step>
+
+```bash
+npm install @ncdai/react-wheel-picker@^1.0.16
+```
+
+<Step>Adjust scroll sensitivity (optional)</Step>
+
+If mouse wheel scrolling feels too fast or slow, adjust it:
+
+```tsx
+<WheelPicker
+  options={options}
+  scrollSensitivity={3} // Lower = slower, Higher = faster (default: 5)
+/>
+```
+
+</Steps>
+
+## Upgrading to v1.0.13
+
+Version 1.0.13 introduces click-to-select functionality.
+
+### What Changed
+
+Users can now click directly on an option to select it. The cursor style changed from `ns-resize` to `default`.
+
+**Before (v1.0.12 and earlier):**
+- Only dragging/scrolling changed the selection
+- Cursor showed `ns-resize` on hover
+
+**After (v1.0.13+):**
+- Clicking an option scrolls and selects it
+- Cursor shows `default` for better UX
+
+<Info>
+No code changes required. This enhancement works automatically.
+</Info>
+
+## Upgrading to v1.0.12
+
+Version 1.0.12 adds the `optionItemHeight` prop and changes the `label` type to `ReactNode`.
+
+### What Changed
+
+1. **Customizable item height**: Use `optionItemHeight` to adjust option spacing
+2. **ReactNode labels**: Labels can now be any React element, not just strings
+
+### Migration Steps
+
+<Steps>
+
+<Step>Update the package</Step>
+
+```bash
+npm install @ncdai/react-wheel-picker@^1.0.12
+```
+
+<Step>Adjust item height (optional)</Step>
+
+```tsx
+<WheelPicker
+  options={options}
+  optionItemHeight={40} // Default: 30
+/>
+```
+
+<Step>Use ReactNode labels (optional)</Step>
+
+```tsx
+const options: WheelPickerOption[] = [
+  {
+    label: (
+      <div className="flex items-center gap-2">
+        <span>⚡</span>
+        <span>Next.js</span>
+      </div>
+    ),
+    value: "nextjs",
+  },
+];
+```
+
+</Steps>
+
+<Warning>
+If you're using TypeScript with strict type checking and have explicit `label: string` type annotations, you'll need to update them to `label: ReactNode`.
+</Warning>
+
+## Upgrading from v1.0.8 to v1.0.9+
+
+Versions 1.0.8 and 1.0.9 improved scroll behavior with smooth animations.
+
+### What Changed
+
+Scroll animations are now smoother and more responsive. No code changes required.
+
+## React Version Upgrades
+
+### Upgrading to React 19
+
+React Wheel Picker is fully compatible with React 19.
+
+<Steps>
+
+<Step>Update React</Step>
+
+```bash
+npm install react@19 react-dom@19
+```
+
+<Step>Update React Wheel Picker</Step>
+
+```bash
+npm install @ncdai/react-wheel-picker@latest
+```
+
+<Step>Test your implementation</Step>
+
+No API changes are needed, but test your pickers to ensure smooth operation.
+
+</Steps>
+
+### Upgrading to React 18
+
+React Wheel Picker works with React 18's concurrent features.
+
+<Steps>
+
+<Step>Update React</Step>
+
+```bash
+npm install react@18 react-dom@18
+```
+
+<Step>Update to React 18 root API</Step>
+
+```tsx
+// Before (React 17)
+import ReactDOM from 'react-dom';
+ReactDOM.render(<App />, document.getElementById('root'));
+
+// After (React 18)
+import { createRoot } from 'react-dom/client';
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);
+```
+
+<Step>Verify picker behavior</Step>
+
+Test your wheel pickers under React 18's automatic batching and concurrent rendering.
+
+</Steps>
+
+<Info>
+The library handles React 18's concurrent features automatically. No special configuration needed.
+</Info>
+
+## CommonJS vs ESM
+
+React Wheel Picker supports both module formats.
+
+### Using ESM (Recommended)
+
+```tsx
+import { WheelPicker, WheelPickerWrapper } from '@ncdai/react-wheel-picker';
+import '@ncdai/react-wheel-picker/style.css';
+```
+
+### Using CommonJS
+
+```tsx
+const { WheelPicker, WheelPickerWrapper } = require('@ncdai/react-wheel-picker');
+require('@ncdai/react-wheel-picker/style.css');
+```
+
+### CSS Import Paths
+
+Both import paths work:
+
+```tsx
+// Option 1 (Recommended)
+import '@ncdai/react-wheel-picker/style.css';
+
+// Option 2
+import '@ncdai/react-wheel-picker/dist/style.css';
+```
+
+## Troubleshooting
+
+If you encounter issues after upgrading, see the [Troubleshooting Guide](/advanced/troubleshooting).

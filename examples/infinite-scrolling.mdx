@@ -1,0 +1,264 @@
+---
+title: Infinite scrolling
+description: Enable infinite loop scrolling for continuous values
+---
+
+The `infinite` prop enables infinite loop scrolling, allowing users to continuously scroll through options without reaching an end.
+
+## Basic infinite scrolling
+
+Enable infinite scrolling by setting the `infinite` prop to `true`:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const numberOptions: WheelPickerOption<number>[] = Array.from(
+  { length: 10 },
+  (_, i) => ({
+    label: i.toString(),
+    value: i,
+  })
+);
+
+export function InfiniteNumberPicker() {
+  const [value, setValue] = useState(0);
+
+  return (
+    <WheelPickerWrapper className="w-32 rounded-md border bg-white dark:bg-zinc-950">
+      <WheelPicker<number>
+        options={numberOptions}
+        value={value}
+        onValueChange={setValue}
+        infinite={true}
+        classNames={{
+          optionItem: "text-zinc-400 dark:text-zinc-500",
+          highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+        }}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+<Info>
+  With `infinite={true}`, scrolling past the last option wraps around to the first option, and vice versa. This creates a seamless, continuous scrolling experience.
+</Info>
+
+## When to use infinite scrolling
+
+Infinite scrolling is ideal for:
+
+<CardGroup cols={2}>
+  <Card title="Numeric ranges" icon="hashtag">
+    Numbers that wrap around (0-9, 0-59 for minutes)
+  </Card>
+  <Card title="Circular data" icon="arrows-rotate">
+    Data that naturally loops (hours in a day, days of the week)
+  </Card>
+  <Card title="Small lists" icon="list">
+    Short lists where wrapping feels natural
+  </Card>
+  <Card title="Continuous values" icon="infinity">
+    Values without a clear start or end
+  </Card>
+</CardGroup>
+
+## Time picker with infinite scrolling
+
+A practical example using infinite scrolling for hours and minutes:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const hourOptions: WheelPickerOption<number>[] = Array.from(
+  { length: 24 },
+  (_, i) => ({
+    label: String(i).padStart(2, "0"),
+    value: i,
+  })
+);
+
+const minuteOptions: WheelPickerOption<number>[] = Array.from(
+  { length: 60 },
+  (_, i) => ({
+    label: String(i).padStart(2, "0"),
+    value: i,
+  })
+);
+
+export function InfiniteTimePicker() {
+  const [hour, setHour] = useState(12);
+  const [minute, setMinute] = useState(0);
+
+  return (
+    <div>
+      <WheelPickerWrapper className="flex gap-2 w-fit rounded-md border bg-white dark:bg-zinc-950 p-4">
+        <WheelPicker<number>
+          options={hourOptions}
+          value={hour}
+          onValueChange={setHour}
+          infinite={true}
+          classNames={{
+            optionItem: "text-zinc-400 dark:text-zinc-500",
+            highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+          }}
+        />
+        <div className="flex items-center text-2xl font-bold">:</div>
+        <WheelPicker<number>
+          options={minuteOptions}
+          value={minute}
+          onValueChange={setMinute}
+          infinite={true}
+          classNames={{
+            optionItem: "text-zinc-400 dark:text-zinc-500",
+            highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+          }}
+        />
+      </WheelPickerWrapper>
+      <p className="mt-4 text-center font-mono text-lg">
+        {String(hour).padStart(2, "0")}:{String(minute).padStart(2, "0")}
+      </p>
+    </div>
+  );
+}
+```
+
+## Day of week picker
+
+Days of the week naturally wrap around, making them perfect for infinite scrolling:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const dayOptions: WheelPickerOption[] = [
+  { label: "Monday", value: "mon" },
+  { label: "Tuesday", value: "tue" },
+  { label: "Wednesday", value: "wed" },
+  { label: "Thursday", value: "thu" },
+  { label: "Friday", value: "fri" },
+  { label: "Saturday", value: "sat" },
+  { label: "Sunday", value: "sun" },
+];
+
+export function DayOfWeekPicker() {
+  const [day, setDay] = useState("mon");
+
+  return (
+    <WheelPickerWrapper className="w-56 rounded-md border bg-white dark:bg-zinc-950">
+      <WheelPicker
+        options={dayOptions}
+        value={day}
+        onValueChange={setDay}
+        infinite={true}
+        classNames={{
+          optionItem: "text-zinc-400 dark:text-zinc-500",
+          highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+        }}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+## How it works
+
+Infinite scrolling is implemented by duplicating options at runtime:
+
+```tsx
+// From source: packages/react-wheel-picker/src/index.tsx:129-146
+const options = useMemo<WheelPickerOption<T>[]>(() => {
+  if (!infiniteProp) {
+    return optionsProp;
+  }
+
+  const result: WheelPickerOption<T>[] = [];
+  const halfCount = Math.ceil(countProp / 2);
+
+  if (optionsProp.length === 0) {
+    return result;
+  }
+
+  while (result.length < halfCount) {
+    result.push(...optionsProp);
+  }
+
+  return result;
+}, [countProp, optionsProp, infiniteProp]);
+```
+
+The component duplicates your options internally to create the illusion of infinite scrolling. The `visibleCount` prop determines how many duplicates are created.
+
+<Note>
+  Infinite scrolling normalizes the scroll position using modulo arithmetic, so the picker always shows the correct option regardless of how many times you've looped around.
+</Note>
+
+## Infinite vs non-infinite
+
+Here's when to use each mode:
+
+| Feature | Infinite mode | Non-infinite mode |
+|---------|--------------|-------------------|
+| Wrapping behavior | Wraps around continuously | Stops at first/last item |
+| Resistance effect | No resistance | Resistance at boundaries |
+| Keyboard navigation | No Home/End keys | Home/End jump to start/end |
+| Best for | Circular data, small lists | Linear data, large lists |
+| Performance | Duplicates options | No duplication |
+
+## Configuration tips
+
+<Accordion title="Adjust visibleCount for smoother infinite scrolling">
+  The `visibleCount` prop affects how many options are duplicated in infinite mode. Higher values create more duplicates, which can make the infinite effect smoother but uses more memory.
+
+  ```tsx
+  <WheelPicker
+    options={options}
+    value={value}
+    onValueChange={setValue}
+    infinite={true}
+    visibleCount={24} // Higher value = smoother infinite scrolling
+  />
+  ```
+
+  The default is `20`, which works well for most use cases. Use multiples of 4 for best results.
+</Accordion>
+
+<Accordion title="Avoid infinite scrolling with large lists">
+  Infinite scrolling duplicates your options internally. For lists with hundreds of items, this can impact performance and memory usage. Consider using non-infinite mode for large datasets.
+
+  ```tsx
+  // Good: Small list with infinite scrolling
+  const hours = Array.from({ length: 24 }, (_, i) => ({ label: i, value: i }));
+  <WheelPicker options={hours} infinite={true} />
+
+  // Bad: Large list with infinite scrolling
+  const years = Array.from({ length: 1000 }, (_, i) => ({ label: i, value: i }));
+  <WheelPicker options={years} infinite={true} /> // ❌ Don't do this
+  <WheelPicker options={years} infinite={false} /> // ✅ Better
+  ```
+</Accordion>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Disabled options" icon="ban" href="/examples/disabled-options">
+    Learn how to disable specific options
+  </Card>
+  <Card title="API reference" icon="code" href="/api/wheel-picker">
+    See all available props and configuration
+  </Card>
+</CardGroup>

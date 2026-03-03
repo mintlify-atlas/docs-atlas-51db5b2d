@@ -1,0 +1,295 @@
+---
+title: Multiple pickers
+description: Combine multiple wheel pickers for complex inputs like dates and times
+---
+
+The `WheelPickerWrapper` component allows you to group multiple wheel pickers together, enabling keyboard navigation between them.
+
+## Time picker
+
+A common use case is creating a time picker with separate wheels for hours, minutes, and AM/PM:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const hourOptions: WheelPickerOption<number>[] = Array.from(
+  { length: 12 },
+  (_, i) => ({
+    label: String(i + 1).padStart(2, "0"),
+    value: i + 1,
+  })
+);
+
+const minuteOptions: WheelPickerOption<number>[] = Array.from(
+  { length: 60 },
+  (_, i) => ({
+    label: String(i).padStart(2, "0"),
+    value: i,
+  })
+);
+
+const periodOptions: WheelPickerOption[] = [
+  { label: "AM", value: "am" },
+  { label: "PM", value: "pm" },
+];
+
+export function TimePicker() {
+  const [hour, setHour] = useState(12);
+  const [minute, setMinute] = useState(0);
+  const [period, setPeriod] = useState("pm");
+
+  const formattedTime = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${period.toUpperCase()}`;
+
+  return (
+    <div>
+      <WheelPickerWrapper className="flex gap-2 w-fit rounded-md border bg-white dark:bg-zinc-950 p-4">
+        <WheelPicker<number>
+          options={hourOptions}
+          value={hour}
+          onValueChange={setHour}
+          classNames={{
+            optionItem: "text-zinc-400 dark:text-zinc-500",
+            highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+          }}
+        />
+        <div className="flex items-center text-2xl font-bold">:</div>
+        <WheelPicker<number>
+          options={minuteOptions}
+          value={minute}
+          onValueChange={setMinute}
+          classNames={{
+            optionItem: "text-zinc-400 dark:text-zinc-500",
+            highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+          }}
+        />
+        <WheelPicker
+          options={periodOptions}
+          value={period}
+          onValueChange={setPeriod}
+          classNames={{
+            optionItem: "text-zinc-400 dark:text-zinc-500",
+            highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+          }}
+        />
+      </WheelPickerWrapper>
+      <p className="mt-4 text-center font-mono text-lg">
+        Selected time: {formattedTime}
+      </p>
+    </div>
+  );
+}
+```
+
+## Date picker
+
+Create a full date picker with month, day, and year wheels:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const monthOptions: WheelPickerOption<number>[] = [
+  { label: "January", value: 1 },
+  { label: "February", value: 2 },
+  { label: "March", value: 3 },
+  { label: "April", value: 4 },
+  { label: "May", value: 5 },
+  { label: "June", value: 6 },
+  { label: "July", value: 7 },
+  { label: "August", value: 8 },
+  { label: "September", value: 9 },
+  { label: "October", value: 10 },
+  { label: "November", value: 11 },
+  { label: "December", value: 12 },
+];
+
+const dayOptions: WheelPickerOption<number>[] = Array.from(
+  { length: 31 },
+  (_, i) => ({
+    label: String(i + 1),
+    value: i + 1,
+  })
+);
+
+const yearOptions: WheelPickerOption<number>[] = Array.from(
+  { length: 100 },
+  (_, i) => {
+    const year = 1950 + i;
+    return {
+      label: year.toString(),
+      value: year,
+    };
+  }
+);
+
+export function DatePicker() {
+  const [month, setMonth] = useState(1);
+  const [day, setDay] = useState(1);
+  const [year, setYear] = useState(2024);
+
+  const selectedDate = new Date(year, month - 1, day);
+  const formattedDate = selectedDate.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  return (
+    <div>
+      <WheelPickerWrapper className="flex gap-2 w-fit rounded-md border bg-white dark:bg-zinc-950 p-4">
+        <WheelPicker<number>
+          options={monthOptions}
+          value={month}
+          onValueChange={setMonth}
+          classNames={{
+            optionItem: "text-zinc-400 dark:text-zinc-500 w-32",
+            highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+          }}
+        />
+        <WheelPicker<number>
+          options={dayOptions}
+          value={day}
+          onValueChange={setDay}
+          classNames={{
+            optionItem: "text-zinc-400 dark:text-zinc-500 w-16",
+            highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+          }}
+        />
+        <WheelPicker<number>
+          options={yearOptions}
+          value={year}
+          onValueChange={setYear}
+          classNames={{
+            optionItem: "text-zinc-400 dark:text-zinc-500 w-20",
+            highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+          }}
+        />
+      </WheelPickerWrapper>
+      <p className="mt-4 text-center">{formattedDate}</p>
+    </div>
+  );
+}
+```
+
+## Keyboard navigation
+
+When multiple pickers are wrapped together, you can navigate between them using the keyboard:
+
+<Steps>
+  <Step title="Arrow Left/Right">
+    Move focus between pickers. Press `←` to focus the previous picker, `→` to focus the next picker.
+  </Step>
+  <Step title="Arrow Up/Down">
+    Scroll the currently focused picker. Press `↑` to scroll up, `↓` to scroll down.
+  </Step>
+  <Step title="Home/End">
+    Jump to the first or last option in the currently focused picker (only works in non-infinite mode).
+  </Step>
+</Steps>
+
+<Info>
+  The `WheelPickerWrapper` manages focus state and ensures only one picker is focusable at a time (using `tabIndex`). This follows accessibility best practices for composite widgets.
+</Info>
+
+## Custom layout
+
+You can customize the layout of multiple pickers using CSS:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const options1: WheelPickerOption[] = [
+  { label: "Option 1", value: "1" },
+  { label: "Option 2", value: "2" },
+  { label: "Option 3", value: "3" },
+];
+
+const options2: WheelPickerOption[] = [
+  { label: "A", value: "a" },
+  { label: "B", value: "b" },
+  { label: "C", value: "c" },
+];
+
+export function CustomLayoutPicker() {
+  const [value1, setValue1] = useState("1");
+  const [value2, setValue2] = useState("a");
+
+  return (
+    <WheelPickerWrapper className="grid grid-cols-2 gap-4 p-4 rounded-md border">
+      <div>
+        <label className="block text-sm font-medium mb-2">First Picker</label>
+        <WheelPicker
+          options={options1}
+          value={value1}
+          onValueChange={setValue1}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-2">Second Picker</label>
+        <WheelPicker
+          options={options2}
+          value={value2}
+          onValueChange={setValue2}
+        />
+      </div>
+    </WheelPickerWrapper>
+  );
+}
+```
+
+## Without wrapper
+
+If you don't need keyboard navigation between pickers, you can omit the `WheelPickerWrapper`:
+
+```tsx
+import { useState } from "react";
+import { WheelPicker, type WheelPickerOption } from "@ncdai/react-wheel-picker";
+
+const options: WheelPickerOption[] = [
+  { label: "Red", value: "red" },
+  { label: "Green", value: "green" },
+  { label: "Blue", value: "blue" },
+];
+
+export function IndependentPickers() {
+  const [color1, setColor1] = useState("red");
+  const [color2, setColor2] = useState("green");
+
+  return (
+    <div className="flex gap-4">
+      <WheelPicker options={options} value={color1} onValueChange={setColor1} />
+      <WheelPicker options={options} value={color2} onValueChange={setColor2} />
+    </div>
+  );
+}
+```
+
+<Warning>
+  Without `WheelPickerWrapper`, each picker operates independently. You won't have keyboard navigation between pickers or coordinated focus management.
+</Warning>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Infinite scrolling" icon="infinity" href="/examples/infinite-scrolling">
+    Enable infinite loop scrolling for continuous values
+  </Card>
+  <Card title="Keyboard navigation" icon="keyboard" href="/concepts/keyboard-navigation">
+    Learn more about keyboard navigation features
+  </Card>
+</CardGroup>

@@ -1,0 +1,210 @@
+---
+title: WheelPickerWrapper
+description: A wrapper component that enables keyboard navigation between multiple WheelPicker components.
+---
+
+`WheelPickerWrapper` is a container component that groups multiple `WheelPicker` components together and enables seamless keyboard navigation between them using arrow keys.
+
+## Props
+
+<ParamField path="children" type="ReactNode" required>
+  Child elements to be rendered inside the wrapper. Typically contains multiple `WheelPicker` components.
+
+  ```tsx
+  <WheelPickerWrapper>
+    <WheelPicker options={hours} />
+    <WheelPicker options={minutes} />
+  </WheelPickerWrapper>
+  ```
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS class name for the wrapper element. Use this to add custom styling to the container.
+
+  ```tsx
+  <WheelPickerWrapper className="flex gap-4 p-4 bg-white rounded-lg">
+    <WheelPicker options={hours} />
+    <WheelPicker options={minutes} />
+  </WheelPickerWrapper>
+  ```
+</ParamField>
+
+## Functionality
+
+`WheelPickerWrapper` provides the following features:
+
+### Keyboard Navigation Between Pickers
+
+When any `WheelPicker` inside the wrapper is focused, you can navigate between pickers using:
+
+- **Arrow Left**: Move focus to the previous picker
+- **Arrow Right**: Move focus to the next picker
+
+Navigation wraps around, so pressing Arrow Right on the last picker moves to the first picker, and vice versa.
+
+### Focus Management
+
+The wrapper manages focus state across all child pickers:
+
+- Only one picker can be focused at a time
+- The focused picker receives keyboard events
+- Tab index is automatically managed to ensure proper tab order
+
+## Usage Examples
+
+### Basic Time Picker
+
+```tsx
+import { WheelPicker, WheelPickerWrapper } from 'react-wheel-picker';
+
+function TimePicker() {
+  const hours = Array.from({ length: 24 }, (_, i) => ({
+    value: i,
+    label: String(i).padStart(2, '0')
+  }));
+
+  const minutes = Array.from({ length: 60 }, (_, i) => ({
+    value: i,
+    label: String(i).padStart(2, '0')
+  }));
+
+  return (
+    <WheelPickerWrapper className="flex gap-2">
+      <WheelPicker options={hours} infinite />
+      <span className="self-center">:</span>
+      <WheelPicker options={minutes} infinite />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+### Date Picker with Month, Day, and Year
+
+```tsx
+import { useState } from 'react';
+import { WheelPicker, WheelPickerWrapper } from 'react-wheel-picker';
+
+function DatePicker() {
+  const [month, setMonth] = useState(1);
+  const [day, setDay] = useState(1);
+  const [year, setYear] = useState(2024);
+
+  const months = Array.from({ length: 12 }, (_, i) => ({
+    value: i + 1,
+    label: new Date(2024, i).toLocaleString('default', { month: 'long' })
+  }));
+
+  const days = Array.from({ length: 31 }, (_, i) => ({
+    value: i + 1,
+    label: String(i + 1)
+  }));
+
+  const years = Array.from({ length: 100 }, (_, i) => ({
+    value: 2000 + i,
+    label: String(2000 + i)
+  }));
+
+  return (
+    <WheelPickerWrapper className="flex gap-4 justify-center">
+      <div className="w-32">
+        <WheelPicker
+          value={month}
+          onValueChange={setMonth}
+          options={months}
+        />
+      </div>
+      <div className="w-16">
+        <WheelPicker
+          value={day}
+          onValueChange={setDay}
+          options={days}
+          infinite
+        />
+      </div>
+      <div className="w-20">
+        <WheelPicker
+          value={year}
+          onValueChange={setYear}
+          options={years}
+        />
+      </div>
+    </WheelPickerWrapper>
+  );
+}
+```
+
+### Styled Picker Group
+
+```tsx
+import { WheelPicker, WheelPickerWrapper } from 'react-wheel-picker';
+
+function StyledPickerGroup() {
+  const hours = Array.from({ length: 12 }, (_, i) => ({
+    value: String(i + 1),
+    label: String(i + 1)
+  }));
+
+  const minutes = Array.from({ length: 60 }, (_, i) => ({
+    value: String(i),
+    label: String(i).padStart(2, '0')
+  }));
+
+  const periods = [
+    { value: 'AM', label: 'AM' },
+    { value: 'PM', label: 'PM' }
+  ];
+
+  const pickerClassNames = {
+    optionItem: 'text-gray-400 text-sm',
+    highlightWrapper: 'bg-blue-50 border-y-2 border-blue-500',
+    highlightItem: 'text-blue-900 font-semibold text-lg'
+  };
+
+  return (
+    <WheelPickerWrapper className="inline-flex gap-2 p-6 bg-white rounded-2xl shadow-lg">
+      <WheelPicker
+        options={hours}
+        infinite
+        optionItemHeight={36}
+        classNames={pickerClassNames}
+      />
+      <span className="self-center text-2xl font-bold text-blue-500">:</span>
+      <WheelPicker
+        options={minutes}
+        infinite
+        optionItemHeight={36}
+        classNames={pickerClassNames}
+      />
+      <WheelPicker
+        options={periods}
+        optionItemHeight={36}
+        classNames={pickerClassNames}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+## Without Wrapper
+
+You can use `WheelPicker` components without a wrapper if you don't need keyboard navigation between pickers:
+
+```tsx
+<div className="flex gap-4">
+  <WheelPicker options={hours} />
+  <WheelPicker options={minutes} />
+</div>
+```
+
+In this case, you'll need to use Tab key or mouse clicks to move focus between pickers.
+
+## Implementation Details
+
+The wrapper uses React Context internally to:
+
+- Register each child `WheelPicker` component
+- Track which picker is currently active (focused)
+- Coordinate focus management across pickers
+- Enable left/right arrow key navigation
+
+The wrapper adds a `data-rwp-wrapper` attribute to the container element for styling purposes.

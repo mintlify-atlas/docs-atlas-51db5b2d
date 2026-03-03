@@ -1,0 +1,503 @@
+---
+title: Styling Guide
+description: Complete guide to styling and customizing React Wheel Picker components
+---
+
+## Unstyled by Default
+
+React Wheel Picker is **completely unstyled** by design, providing only minimal structural styles needed for the 3D wheel functionality. This gives you complete control over the appearance.
+
+<Note>
+The library includes minimal CSS for structure (transforms, positioning) but no visual styling (colors, borders, shadows, etc.).
+</Note>
+
+## Styling Methods
+
+You can style React Wheel Picker using:
+
+1. **classNames prop** - Apply custom classes to specific parts
+2. **Data attributes** - Target elements with CSS selectors
+3. **CSS-in-JS** - Use your preferred CSS-in-JS solution
+4. **Tailwind CSS** - Apply utility classes directly
+
+## The classNames Prop
+
+The `classNames` prop allows you to style specific parts of the picker:
+
+```typescript
+type WheelPickerClassNames = {
+  /** Class name for individual option items in the 3D wheel */
+  optionItem?: string;
+  /** Class name for the wrapper of the highlighted area */
+  highlightWrapper?: string;
+  /** Class name for the highlighted item */
+  highlightItem?: string;
+};
+```
+
+### Usage Example
+
+<CodeGroup>
+```tsx Tailwind CSS
+<WheelPicker
+  options={hours}
+  classNames={{
+    optionItem: 'text-gray-400 font-medium',
+    highlightWrapper: 'bg-blue-50 border-y-2 border-blue-200 rounded-lg',
+    highlightItem: 'text-blue-600 font-bold text-lg',
+  }}
+/>
+```
+
+```tsx CSS Modules
+import styles from './picker.module.css';
+
+<WheelPicker
+  options={hours}
+  classNames={{
+    optionItem: styles.option,
+    highlightWrapper: styles.highlight,
+    highlightItem: styles.selected,
+  }}
+/>
+```
+</CodeGroup>
+
+## Data Attributes for CSS Targeting
+
+The library uses data attributes that you can target with CSS selectors:
+
+### Wrapper Component
+
+```css
+/* Target the wrapper container */
+[data-rwp-wrapper] {
+  /* Your styles */
+}
+```
+
+Default structural styles:
+```css
+[data-rwp-wrapper] {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+  justify-content: space-between;
+  perspective: 2000px;
+  user-select: none;
+}
+```
+
+### Main Picker Container
+
+```css
+/* Target the main picker */
+[data-rwp] {
+  /* Your styles */
+}
+
+/* Target focused picker */
+[data-rwp]:focus-visible {
+  outline: 2px solid blue;
+  outline-offset: 2px;
+}
+```
+
+Default structural styles:
+```css
+[data-rwp] {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  cursor: default;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 20%,
+    black 80%,
+    transparent 100%
+  );
+}
+```
+
+<Info>
+The `mask-image` creates a fade effect at the top and bottom of the wheel. You can override this for a different visual effect.
+</Info>
+
+### Option Items (3D Wheel)
+
+```css
+/* Target all option items in the 3D wheel */
+[data-rwp-option] {
+  color: #888;
+  font-size: 14px;
+}
+
+/* Target disabled options */
+[data-rwp-option][data-disabled] {
+  opacity: 0.3;
+  color: #ccc;
+}
+```
+
+The `data-rwp-option` element also has:
+- `data-slot="option-item"` - For targeting with data-slot selector
+- `data-index="{number}"` - The item's index position
+- `data-disabled` - Present when option is disabled
+
+Default structural styles:
+```css
+[data-rwp-option] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+```
+
+### Highlight Area
+
+```css
+/* Target the highlight wrapper (center selection area) */
+[data-rwp-highlight-wrapper] {
+  background: rgba(59, 130, 246, 0.1);
+  border-top: 2px solid rgb(59, 130, 246);
+  border-bottom: 2px solid rgb(59, 130, 246);
+}
+
+/* Style when focused */
+[data-rwp-highlight-wrapper][data-rwp-focused] {
+  background: rgba(59, 130, 246, 0.2);
+  box-shadow: inset 0 0 0 2px rgb(59, 130, 246);
+}
+
+/* Target highlight items */
+[data-rwp-highlight-item] {
+  font-weight: 600;
+  font-size: 16px;
+  color: rgb(59, 130, 246);
+}
+
+/* Target disabled highlight items */
+[data-rwp-highlight-item][data-disabled] {
+  opacity: 0.4;
+}
+```
+
+The highlight wrapper has:
+- `data-rwp-focused` - Present when picker has focus
+- `data-slot="highlight-wrapper"` - For targeting with data-slot selector
+
+### Options List Container
+
+```css
+/* Target the 3D options list */
+[data-rwp-options] {
+  /* Your styles */
+}
+
+/* Target the highlight list */
+[data-rwp-highlight-list] {
+  /* Your styles */
+}
+```
+
+## Complete Styling Examples
+
+### iOS Style
+
+<CodeGroup>
+```css CSS
+[data-rwp-wrapper] {
+  background: #f5f5f7;
+  border-radius: 12px;
+  padding: 8px;
+}
+
+[data-rwp] {
+  background: white;
+  border-radius: 8px;
+}
+
+[data-rwp-option] {
+  color: #86868b;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+[data-rwp-highlight-wrapper] {
+  background: rgba(0, 122, 255, 0.08);
+  border-top: 0.5px solid rgba(0, 122, 255, 0.3);
+  border-bottom: 0.5px solid rgba(0, 122, 255, 0.3);
+}
+
+[data-rwp-highlight-item] {
+  color: #000;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+[data-rwp-highlight-item][data-disabled] {
+  color: #d1d1d6;
+}
+```
+
+```tsx React Component
+function iOSTimePicker() {
+  return (
+    <WheelPickerWrapper className="ios-picker">
+      <WheelPicker
+        options={hours}
+        defaultValue="09"
+        classNames={{
+          optionItem: 'ios-option',
+          highlightWrapper: 'ios-highlight',
+          highlightItem: 'ios-selected',
+        }}
+      />
+      <WheelPicker options={minutes} defaultValue="30" />
+      <WheelPicker options={ampm} defaultValue="AM" />
+    </WheelPickerWrapper>
+  );
+}
+```
+</CodeGroup>
+
+### Material Design Style
+
+<CodeGroup>
+```css CSS
+[data-rwp-wrapper] {
+  background: transparent;
+  gap: 8px;
+}
+
+[data-rwp] {
+  border-radius: 4px;
+  background: transparent;
+}
+
+[data-rwp]:focus-visible {
+  outline: none;
+}
+
+[data-rwp-option] {
+  color: rgba(0, 0, 0, 0.38);
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+}
+
+[data-rwp-highlight-wrapper] {
+  background: rgba(103, 80, 164, 0.08);
+  border-radius: 4px;
+}
+
+[data-rwp-highlight-wrapper][data-rwp-focused] {
+  background: rgba(103, 80, 164, 0.12);
+}
+
+[data-rwp-highlight-item] {
+  color: #6750a4;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
+}
+```
+
+```tsx React Component
+<WheelPickerWrapper>
+  <WheelPicker
+    options={dates}
+    classNames={{
+      highlightWrapper: 'md-highlight',
+    }}
+  />
+</WheelPickerWrapper>
+```
+</CodeGroup>
+
+### Dark Mode Example
+
+```tsx
+function DarkModePicker() {
+  return (
+    <WheelPickerWrapper className="dark:bg-gray-800 bg-white rounded-xl p-4">
+      <WheelPicker
+        options={options}
+        classNames={{
+          optionItem: 'dark:text-gray-500 text-gray-400',
+          highlightWrapper: 'dark:bg-blue-900/20 bg-blue-50 dark:border-blue-500 border-blue-200 border-y-2',
+          highlightItem: 'dark:text-blue-400 text-blue-600 font-bold',
+        }}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+## Styling with CSS-in-JS
+
+### Styled Components
+
+```tsx
+import styled from 'styled-components';
+
+const StyledWrapper = styled.div`
+  [data-rwp] {
+    background: ${props => props.theme.background};
+  }
+  
+  [data-rwp-highlight-wrapper] {
+    background: ${props => props.theme.primary}15;
+    border-top: 2px solid ${props => props.theme.primary};
+    border-bottom: 2px solid ${props => props.theme.primary};
+  }
+  
+  [data-rwp-highlight-item] {
+    color: ${props => props.theme.primary};
+    font-weight: 600;
+  }
+`;
+
+function ThemedPicker() {
+  return (
+    <StyledWrapper>
+      <WheelPickerWrapper>
+        <WheelPicker options={options} />
+      </WheelPickerWrapper>
+    </StyledWrapper>
+  );
+}
+```
+
+### Emotion
+
+```tsx
+import { css } from '@emotion/react';
+
+const pickerStyles = css`
+  [data-rwp-wrapper] {
+    background: linear-gradient(to bottom, #f0f9ff, #e0f2fe);
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+  
+  [data-rwp-option] {
+    color: #64748b;
+  }
+  
+  [data-rwp-highlight-item] {
+    color: #0284c7;
+    font-weight: 700;
+  }
+`;
+
+function EmotionPicker() {
+  return (
+    <div css={pickerStyles}>
+      <WheelPickerWrapper>
+        <WheelPicker options={options} />
+      </WheelPickerWrapper>
+    </div>
+  );
+}
+```
+
+## Animation and Transitions
+
+Add smooth transitions to enhance the user experience:
+
+```css
+[data-rwp-option] {
+  transition: all 0.2s ease-out;
+}
+
+[data-rwp-highlight-wrapper] {
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+[data-rwp-highlight-wrapper][data-rwp-focused] {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.6);
+  }
+}
+```
+
+## Customizing the Mask Gradient
+
+Change the fade effect at the edges:
+
+```css
+[data-rwp] {
+  /* Sharp cutoff */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+  
+  /* Or remove entirely */
+  mask-image: none;
+}
+```
+
+## Responsive Styling
+
+```css
+/* Mobile styles */
+@media (max-width: 640px) {
+  [data-rwp-wrapper] {
+    padding: 0.5rem;
+  }
+  
+  [data-rwp-option] {
+    font-size: 12px;
+  }
+  
+  [data-rwp-highlight-item] {
+    font-size: 14px;
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+  [data-rwp-option] {
+    font-size: 16px;
+  }
+  
+  [data-rwp-highlight-item] {
+    font-size: 20px;
+  }
+}
+```
+
+<Tip>
+Use the `optionItemHeight` prop along with responsive CSS to adjust the picker size for different screen sizes.
+</Tip>
+
+## Best Practices
+
+1. **Keep it simple** - The 3D wheel effect works best with minimal styling
+2. **Use the highlight area** - Make the selected item visually distinct
+3. **Consider contrast** - Ensure disabled items are clearly distinguishable
+4. **Test focus states** - Keyboard users need clear focus indicators
+5. **Respect the mask** - The gradient mask creates depth; use it to your advantage
+
+<Warning>
+Avoid adding transforms to `[data-rwp-option]` elements, as this will interfere with the 3D positioning.
+</Warning>

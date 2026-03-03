@@ -1,0 +1,256 @@
+---
+title: WheelPicker
+description: A customizable wheel picker component for selecting values from a scrollable list with touch, mouse, and keyboard support.
+---
+
+`WheelPicker` is the main component for creating iOS-style wheel picker interfaces. It supports both controlled and uncontrolled modes, infinite scrolling, keyboard navigation, and type-ahead search.
+
+## Props
+
+<ParamField path="options" type="WheelPickerOption<T>[]" required>
+  Array of options to display in the wheel. Each option must have a `value` and `label` property.
+
+  ```tsx
+  <WheelPicker
+    options={[
+      { value: '1', label: 'One' },
+      { value: '2', label: 'Two' },
+      { value: '3', label: 'Three', disabled: true }
+    ]}
+  />
+  ```
+</ParamField>
+
+<ParamField path="value" type="T">
+  Current value of the picker when controlled. Use with `onValueChange` to create a controlled component.
+
+  ```tsx
+  const [value, setValue] = useState('1');
+  
+  <WheelPicker
+    value={value}
+    onValueChange={setValue}
+    options={options}
+  />
+  ```
+</ParamField>
+
+<ParamField path="defaultValue" type="T">
+  Initial value of the picker when uncontrolled. If not provided, the first enabled option will be selected.
+
+  ```tsx
+  <WheelPicker
+    defaultValue="2"
+    options={options}
+  />
+  ```
+</ParamField>
+
+<ParamField path="onValueChange" type="(value: T) => void">
+  Callback fired when the selected value changes. Receives the new value as an argument.
+
+  ```tsx
+  <WheelPicker
+    onValueChange={(newValue) => {
+      console.log('Selected:', newValue);
+    }}
+    options={options}
+  />
+  ```
+</ParamField>
+
+<ParamField path="infinite" type="boolean" default="false">
+  Whether the wheel should loop infinitely. When enabled, scrolling past the last item wraps to the first item and vice versa.
+
+  ```tsx
+  <WheelPicker
+    infinite
+    options={options}
+  />
+  ```
+</ParamField>
+
+<ParamField path="visibleCount" type="number" default="20">
+  The number of options visible on the circular ring. Must be a multiple of 4. Higher values create a larger, less curved wheel.
+
+  ```tsx
+  <WheelPicker
+    visibleCount={16}
+    options={options}
+  />
+  ```
+</ParamField>
+
+<ParamField path="dragSensitivity" type="number" default="3">
+  Sensitivity of the drag interaction. Higher values make the wheel more sensitive to drag gestures, affecting deceleration speed.
+
+  ```tsx
+  <WheelPicker
+    dragSensitivity={5}
+    options={options}
+  />
+  ```
+</ParamField>
+
+<ParamField path="scrollSensitivity" type="number" default="5">
+  Sensitivity of the scroll interaction. Higher values make scrolling with arrow keys and mouse wheel faster.
+
+  ```tsx
+  <WheelPicker
+    scrollSensitivity={8}
+    options={options}
+  />
+  ```
+</ParamField>
+
+<ParamField path="optionItemHeight" type="number" default="30">
+  Height (in pixels) of each item in the picker list. Adjust this to make items larger or smaller.
+
+  ```tsx
+  <WheelPicker
+    optionItemHeight={40}
+    options={options}
+  />
+  ```
+</ParamField>
+
+<ParamField path="classNames" type="WheelPickerClassNames">
+  Custom class names for styling different parts of the wheel picker.
+
+  ```tsx
+  <WheelPicker
+    classNames={{
+      optionItem: 'text-gray-400',
+      highlightWrapper: 'border-y-2 border-blue-500',
+      highlightItem: 'text-black font-bold'
+    }}
+    options={options}
+  />
+  ```
+
+  See [WheelPickerClassNames](/api/types#wheelpickerclassnames) for details.
+</ParamField>
+
+## Value Types
+
+The generic type `T` extends `WheelPickerValue`, which can be either `string` or `number`:
+
+```tsx
+// String values
+<WheelPicker<string>
+  value="apple"
+  options={[
+    { value: 'apple', label: 'Apple' },
+    { value: 'orange', label: 'Orange' }
+  ]}
+/>
+
+// Number values
+<WheelPicker<number>
+  value={1}
+  options={[
+    { value: 1, label: 'One' },
+    { value: 2, label: 'Two' }
+  ]}
+/>
+```
+
+## Keyboard Navigation
+
+`WheelPicker` supports full keyboard navigation:
+
+- **Arrow Up/Down**: Navigate between options
+- **Arrow Left/Right**: Navigate between pickers in a `WheelPickerWrapper`
+- **Home**: Jump to first option (non-infinite mode only)
+- **End**: Jump to last option (non-infinite mode only)
+- **Type characters**: Type-ahead search to quickly find options
+
+## Type-Ahead Search
+
+The component includes built-in type-ahead search functionality. When the picker is focused, typing characters will search through options and select the first match.
+
+For options with `ReactNode` labels, you can provide a custom `textValue` for search:
+
+```tsx
+<WheelPicker
+  options={[
+    {
+      value: '1',
+      label: <div><Icon /> Custom Label</div>,
+      textValue: 'Custom Label' // Used for type-ahead search
+    }
+  ]}
+/>
+```
+
+## Disabled Options
+
+Options can be marked as disabled to prevent selection:
+
+```tsx
+<WheelPicker
+  options={[
+    { value: '1', label: 'Available' },
+    { value: '2', label: 'Disabled', disabled: true },
+    { value: '3', label: 'Also Available' }
+  ]}
+/>
+```
+
+Disabled options are automatically skipped during keyboard navigation and drag gestures.
+
+## Complete Example
+
+```tsx
+import { useState } from 'react';
+import { WheelPicker } from 'react-wheel-picker';
+
+function TimePicker() {
+  const [hour, setHour] = useState('12');
+  const [minute, setMinute] = useState('00');
+  const [period, setPeriod] = useState('PM');
+
+  const hours = Array.from({ length: 12 }, (_, i) => ({
+    value: String(i + 1),
+    label: String(i + 1).padStart(2, '0')
+  }));
+
+  const minutes = Array.from({ length: 60 }, (_, i) => ({
+    value: String(i),
+    label: String(i).padStart(2, '0')
+  }));
+
+  const periods = [
+    { value: 'AM', label: 'AM' },
+    { value: 'PM', label: 'PM' }
+  ];
+
+  return (
+    <div className="flex gap-4">
+      <WheelPicker
+        value={hour}
+        onValueChange={setHour}
+        options={hours}
+        infinite
+        optionItemHeight={40}
+        classNames={{
+          highlightItem: 'font-bold text-blue-600'
+        }}
+      />
+      <WheelPicker
+        value={minute}
+        onValueChange={setMinute}
+        options={minutes}
+        infinite
+        optionItemHeight={40}
+      />
+      <WheelPicker
+        value={period}
+        onValueChange={setPeriod}
+        options={periods}
+        optionItemHeight={40}
+      />
+    </div>
+  );
+}
+```

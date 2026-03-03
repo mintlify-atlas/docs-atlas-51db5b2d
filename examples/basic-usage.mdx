@@ -1,0 +1,181 @@
+---
+title: Basic usage
+description: Learn how to use the WheelPicker component with simple examples
+---
+
+The most basic usage of React Wheel Picker involves creating a list of options and managing the selected value.
+
+## Simple picker
+
+Here's a minimal example with a controlled component:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const options: WheelPickerOption[] = [
+  { label: "JavaScript", value: "javascript" },
+  { label: "TypeScript", value: "typescript" },
+  { label: "Python", value: "python" },
+  { label: "Java", value: "java" },
+  { label: "Go", value: "go" },
+  { label: "Rust", value: "rust" },
+];
+
+export function LanguagePicker() {
+  const [value, setValue] = useState("javascript");
+
+  return (
+    <div>
+      <WheelPickerWrapper className="w-56 rounded-md border bg-white dark:bg-zinc-950">
+        <WheelPicker
+          options={options}
+          value={value}
+          onValueChange={setValue}
+          classNames={{
+            optionItem: "text-zinc-400 dark:text-zinc-500",
+            highlightWrapper: "bg-zinc-100 dark:bg-zinc-900",
+          }}
+        />
+      </WheelPickerWrapper>
+      <p className="mt-4">Selected: {value}</p>
+    </div>
+  );
+}
+```
+
+## Uncontrolled component
+
+You can also use the picker as an uncontrolled component with `defaultValue`:
+
+```tsx
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const options: WheelPickerOption[] = [
+  { label: "Small", value: "sm" },
+  { label: "Medium", value: "md" },
+  { label: "Large", value: "lg" },
+  { label: "Extra Large", value: "xl" },
+];
+
+export function SizePicker() {
+  return (
+    <WheelPickerWrapper className="w-56 rounded-md border">
+      <WheelPicker
+        options={options}
+        defaultValue="md"
+        onValueChange={(value) => console.log("Selected:", value)}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+## Numeric values
+
+The picker supports both string and number values:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const yearOptions: WheelPickerOption<number>[] = Array.from(
+  { length: 50 },
+  (_, i) => {
+    const year = 2000 + i;
+    return {
+      label: year.toString(),
+      value: year,
+    };
+  }
+);
+
+export function YearPicker() {
+  const [year, setYear] = useState(2024);
+
+  return (
+    <WheelPickerWrapper className="w-32 rounded-md border">
+      <WheelPicker<number>
+        options={yearOptions}
+        value={year}
+        onValueChange={setYear}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+<Note>
+  Notice the generic type parameter `<number>` when using numeric values. This ensures type safety for the `value` and `onValueChange` props.
+</Note>
+
+## Handling value changes
+
+The `onValueChange` callback receives the selected value:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const options: WheelPickerOption[] = [
+  { label: "Low", value: "low" },
+  { label: "Medium", value: "medium" },
+  { label: "High", value: "high" },
+];
+
+export function PriorityPicker() {
+  const [priority, setPriority] = useState("medium");
+
+  const handleChange = (value: string) => {
+    setPriority(value);
+    
+    // You can perform additional actions here
+    console.log("Priority changed to:", value);
+    
+    // Make an API call, update other state, etc.
+  };
+
+  return (
+    <WheelPickerWrapper className="w-56 rounded-md border">
+      <WheelPicker
+        options={options}
+        value={priority}
+        onValueChange={handleChange}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Multiple pickers" icon="layer-group" href="/examples/multiple-pickers">
+    Combine multiple wheel pickers for complex inputs
+  </Card>
+  <Card title="Infinite scrolling" icon="infinity" href="/examples/infinite-scrolling">
+    Enable infinite loop scrolling for continuous values
+  </Card>
+  <Card title="Custom styling" icon="palette" href="/examples/custom-styling">
+    Style your pickers to match your design
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/wheel-picker">
+    Explore all available props and options
+  </Card>
+</CardGroup>

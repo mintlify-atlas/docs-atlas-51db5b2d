@@ -1,0 +1,432 @@
+---
+title: Custom styling
+description: Customize the appearance of the wheel picker with CSS, Tailwind, and CSS-in-JS
+---
+
+React Wheel Picker components are intentionally unstyled, giving you complete control over the appearance. This guide shows various styling approaches.
+
+## Tailwind CSS styling
+
+The most common approach is using Tailwind CSS classes via the `classNames` prop:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const options: WheelPickerOption[] = [
+  { label: "Next.js", value: "nextjs" },
+  { label: "React", value: "react" },
+  { label: "Vue", value: "vue" },
+  { label: "Svelte", value: "svelte" },
+  { label: "Angular", value: "angular" },
+];
+
+export function StyledPicker() {
+  const [value, setValue] = useState("nextjs");
+
+  return (
+    <WheelPickerWrapper className="w-64 rounded-lg border-2 border-blue-200 bg-gradient-to-b from-white to-blue-50 p-4 shadow-lg dark:border-blue-800 dark:from-zinc-900 dark:to-blue-950">
+      <WheelPicker
+        options={options}
+        value={value}
+        onValueChange={setValue}
+        classNames={{
+          optionItem: "text-blue-300 dark:text-blue-700 font-medium",
+          highlightWrapper: "bg-blue-500 text-white rounded-md shadow-md ring-2 ring-blue-300 dark:ring-blue-700",
+          highlightItem: "font-bold",
+        }}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+## Using data attributes
+
+You can also target elements using data attributes for more specific styling:
+
+```tsx
+import "./picker-styles.css";
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const options: WheelPickerOption[] = [
+  { label: "Option 1", value: "1" },
+  { label: "Option 2", value: "2" },
+  { label: "Option 3", value: "3" },
+];
+
+export function DataAttributePicker() {
+  const [value, setValue] = useState("1");
+
+  return (
+    <WheelPickerWrapper className="custom-picker-wrapper">
+      <WheelPicker options={options} value={value} onValueChange={setValue} />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+```css title="picker-styles.css"
+/* Wrapper styling */
+[data-rwp-wrapper].custom-picker-wrapper {
+  width: 14rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(to bottom, #ffffff, #f3f4f6);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Option items */
+[data-rwp-option] {
+  color: #9ca3af;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+/* Highlight wrapper */
+[data-rwp-highlight-wrapper] {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 0.375rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Focused state */
+[data-rwp-highlight-wrapper][data-rwp-focused] {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4);
+}
+
+/* Disabled options */
+[data-rwp-option][data-disabled],
+[data-rwp-highlight-item][data-disabled] {
+  opacity: 0.3;
+  text-decoration: line-through;
+}
+```
+
+## iOS-style picker
+
+Create an iOS-like appearance:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const timeOptions: WheelPickerOption<number>[] = Array.from(
+  { length: 60 },
+  (_, i) => ({
+    label: String(i).padStart(2, "0"),
+    value: i,
+  })
+);
+
+export function IOSStylePicker() {
+  const [value, setValue] = useState(0);
+
+  return (
+    <WheelPickerWrapper className="w-24 bg-white dark:bg-zinc-900 rounded-xl overflow-hidden">
+      <WheelPicker<number>
+        options={timeOptions}
+        value={value}
+        onValueChange={setValue}
+        infinite={true}
+        classNames={{
+          optionItem: "text-zinc-400 dark:text-zinc-600 text-lg",
+          highlightWrapper: "bg-zinc-100 dark:bg-zinc-800 border-y border-zinc-200 dark:border-zinc-700",
+          highlightItem: "text-zinc-900 dark:text-white font-semibold text-xl",
+        }}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+## Material Design style
+
+Create a Material Design-inspired picker:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const options: WheelPickerOption[] = [
+  { label: "Small", value: "sm" },
+  { label: "Medium", value: "md" },
+  { label: "Large", value: "lg" },
+  { label: "Extra Large", value: "xl" },
+];
+
+export function MaterialDesignPicker() {
+  const [value, setValue] = useState("md");
+
+  return (
+    <WheelPickerWrapper className="w-64 bg-white dark:bg-zinc-900 rounded-sm shadow-xl">
+      <WheelPicker
+        options={options}
+        value={value}
+        onValueChange={setValue}
+        classNames={{
+          optionItem: "text-zinc-500 dark:text-zinc-400 text-sm uppercase tracking-wide",
+          highlightWrapper: "bg-indigo-50 dark:bg-indigo-950 text-indigo-900 dark:text-indigo-100 border-b-2 border-t-2 border-indigo-500",
+          highlightItem: "font-medium text-base",
+        }}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+## Dark mode support
+
+Implement proper dark mode styling:
+
+```tsx
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const options: WheelPickerOption[] = [
+  { label: "Option 1", value: "1" },
+  { label: "Option 2", value: "2" },
+  { label: "Option 3", value: "3" },
+];
+
+export function DarkModePicker() {
+  const [value, setValue] = useState("1");
+
+  return (
+    <WheelPickerWrapper className="w-56 rounded-lg border border-zinc-200 bg-white p-4 shadow-lg dark:border-zinc-800 dark:bg-zinc-950">
+      <WheelPicker
+        options={options}
+        value={value}
+        onValueChange={setValue}
+        classNames={{
+          optionItem: "text-zinc-400 dark:text-zinc-500",
+          highlightWrapper: "bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100 rounded data-rwp-focused:ring-2 data-rwp-focused:ring-zinc-300 dark:data-rwp-focused:ring-zinc-700",
+        }}
+      />
+    </WheelPickerWrapper>
+  );
+}
+```
+
+## CSS-in-JS with styled-components
+
+If you prefer CSS-in-JS:
+
+```tsx
+import { useState } from "react";
+import styled from "styled-components";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const StyledWrapper = styled.div`
+  [data-rwp-wrapper] {
+    width: 14rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: linear-gradient(to bottom, #ffffff, #f9fafb);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  [data-rwp-option] {
+    color: #9ca3af;
+    font-size: 1rem;
+  }
+
+  [data-rwp-highlight-wrapper] {
+    background: #3b82f6;
+    color: white;
+    border-radius: 0.375rem;
+    font-weight: 600;
+  }
+
+  [data-rwp-highlight-wrapper][data-rwp-focused] {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+  }
+`;
+
+const options: WheelPickerOption[] = [
+  { label: "Option 1", value: "1" },
+  { label: "Option 2", value: "2" },
+  { label: "Option 3", value: "3" },
+];
+
+export function StyledComponentsPicker() {
+  const [value, setValue] = useState("1");
+
+  return (
+    <StyledWrapper>
+      <WheelPickerWrapper>
+        <WheelPicker options={options} value={value} onValueChange={setValue} />
+      </WheelPickerWrapper>
+    </StyledWrapper>
+  );
+}
+```
+
+## Custom animations
+
+Add custom transitions and animations:
+
+```css
+[data-rwp-option] {
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+[data-rwp-option]:hover {
+  transform: scale(1.05);
+  color: #3b82f6;
+}
+
+[data-rwp-highlight-wrapper] {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-rwp-highlight-wrapper][data-rwp-focused] {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+}
+```
+
+## Available data attributes
+
+All available data attributes for styling:
+
+| Attribute | Element | Description |
+|-----------|---------|-------------|
+| `[data-rwp-wrapper]` | Wrapper | Applied to `WheelPickerWrapper` |
+| `[data-rwp]` | Picker | Applied to `WheelPicker` root |
+| `[data-rwp-options]` | Container | Options list container |
+| `[data-rwp-option]` | Option | Each option item |
+| `[data-rwp-highlight-wrapper]` | Highlight | Highlight area wrapper |
+| `[data-rwp-highlight-list]` | Container | Highlight list container |
+| `[data-rwp-highlight-item]` | Item | Highlighted option item |
+| `[data-rwp-focused]` | State | Present when picker is focused |
+| `[data-disabled]` | State | Present on disabled options |
+
+## ClassNames prop reference
+
+The `classNames` prop accepts these keys:
+
+```tsx
+type WheelPickerClassNames = {
+  /** Class name for individual option items */
+  optionItem?: string;
+  /** Class name for the wrapper of the highlighted area */
+  highlightWrapper?: string;
+  /** Class name for the highlighted item */
+  highlightItem?: string;
+};
+```
+
+<Info>
+  For more details on the `classNames` prop, see the [Styling guide](/concepts/styling).
+</Info>
+
+## Tips for custom styling
+
+<Accordion title="Use CSS variables for theming">
+  Define CSS variables for colors and use them throughout your styles:
+
+  ```css
+  :root {
+    --picker-bg: #ffffff;
+    --picker-text: #000000;
+    --picker-highlight: #3b82f6;
+    --picker-muted: #9ca3af;
+  }
+
+  [data-theme="dark"] {
+    --picker-bg: #18181b;
+    --picker-text: #ffffff;
+    --picker-highlight: #60a5fa;
+    --picker-muted: #52525b;
+  }
+
+  [data-rwp-wrapper] {
+    background: var(--picker-bg);
+    color: var(--picker-text);
+  }
+
+  [data-rwp-option] {
+    color: var(--picker-muted);
+  }
+
+  [data-rwp-highlight-wrapper] {
+    background: var(--picker-highlight);
+  }
+  ```
+</Accordion>
+
+<Accordion title="Maintain adequate contrast for accessibility">
+  Ensure sufficient color contrast between options and background:
+
+  ```tsx
+  // Good - high contrast
+  <WheelPicker
+    classNames={{
+      optionItem: "text-zinc-400", // Light gray on white
+      highlightWrapper: "bg-zinc-900 text-white", // White on dark
+    }}
+  />
+
+  // Bad - low contrast
+  <WheelPicker
+    classNames={{
+      optionItem: "text-zinc-100", // Very light on white ❌
+      highlightWrapper: "bg-zinc-200 text-zinc-300", // Light on light ❌
+    }}
+  />
+  ```
+
+  Use tools like [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) to verify contrast ratios.
+</Accordion>
+
+<Accordion title="Test with different option heights">
+  The `optionItemHeight` prop affects spacing. Test your styles with different heights:
+
+  ```tsx
+  <WheelPicker
+    options={options}
+    optionItemHeight={40} // Larger items
+    classNames={{
+      optionItem: "text-lg py-2", // Adjust padding for larger height
+    }}
+  />
+  ```
+</Accordion>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Styling guide" icon="paintbrush" href="/concepts/styling">
+    Learn more about the styling system
+  </Card>
+  <Card title="API reference" icon="code" href="/api/types">
+    See the full WheelPickerClassNames type definition
+  </Card>
+</CardGroup>

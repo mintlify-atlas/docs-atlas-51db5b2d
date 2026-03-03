@@ -1,0 +1,296 @@
+---
+title: TypeScript Types
+description: TypeScript type definitions for the React Wheel Picker library.
+---
+
+This page documents all the TypeScript types exported by the React Wheel Picker library.
+
+## WheelPickerValue
+
+Represents the value of a single option in the wheel picker.
+
+```typescript
+type WheelPickerValue = string | number;
+```
+
+This is the base type for option values. Both string and number values are supported.
+
+### Usage
+
+```tsx
+// String values
+const stringOption: WheelPickerValue = 'apple';
+
+// Number values
+const numberOption: WheelPickerValue = 42;
+```
+
+## WheelPickerOption
+
+Represents a single option in the wheel picker.
+
+```typescript
+type WheelPickerOption<T extends WheelPickerValue = string> = {
+  /** The value that will be returned when this option is selected */
+  value: T;
+  /** The content displayed for this option */
+  label: ReactNode;
+  /** Optional text for type-ahead search (useful when label is a ReactNode). Defaults to label if string, otherwise value. */
+  textValue?: string;
+  /** Whether this option is disabled and cannot be selected */
+  disabled?: boolean;
+};
+```
+
+### Properties
+
+<ParamField path="value" type="T" required>
+  The value that will be returned when this option is selected. Must be of type `string` or `number`.
+</ParamField>
+
+<ParamField path="label" type="ReactNode" required>
+  The content displayed for this option. Can be any valid React node (string, number, JSX element, etc.).
+</ParamField>
+
+<ParamField path="textValue" type="string">
+  Optional text for type-ahead search. Useful when `label` is a ReactNode. If not provided, defaults to `label` if it's a string, otherwise uses `value` converted to string.
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  Whether this option is disabled and cannot be selected. Disabled options are skipped during keyboard navigation.
+</ParamField>
+
+### Usage Examples
+
+```tsx
+// Simple string option
+const option1: WheelPickerOption<string> = {
+  value: 'apple',
+  label: 'Apple'
+};
+
+// Number option
+const option2: WheelPickerOption<number> = {
+  value: 1,
+  label: 'One'
+};
+
+// Option with ReactNode label
+const option3: WheelPickerOption<string> = {
+  value: 'custom',
+  label: <div><Icon /> Custom Label</div>,
+  textValue: 'Custom Label' // For type-ahead search
+};
+
+// Disabled option
+const option4: WheelPickerOption<string> = {
+  value: 'disabled',
+  label: 'Disabled Option',
+  disabled: true
+};
+
+// Using in WheelPicker
+<WheelPicker<number>
+  options={[
+    { value: 1, label: 'One' },
+    { value: 2, label: 'Two', disabled: true },
+    { value: 3, label: 'Three' }
+  ]}
+/>
+```
+
+## WheelPickerClassNames
+
+Custom class names for styling different parts of the wheel picker.
+
+```typescript
+type WheelPickerClassNames = {
+  /** Class name for individual option items */
+  optionItem?: string;
+  /** Class name for the wrapper of the highlighted area */
+  highlightWrapper?: string;
+  /** Class name for the highlighted item */
+  highlightItem?: string;
+};
+```
+
+### Properties
+
+<ParamField path="optionItem" type="string">
+  Class name applied to individual option items in the wheel. Use this to style non-selected options.
+</ParamField>
+
+<ParamField path="highlightWrapper" type="string">
+  Class name applied to the wrapper of the highlighted area. Use this to style the container around the selected item (e.g., borders, background).
+</ParamField>
+
+<ParamField path="highlightItem" type="string">
+  Class name applied to the highlighted (selected) item. Use this to style the currently selected option.
+</ParamField>
+
+### Usage Examples
+
+```tsx
+// Basic styling
+const classNames: WheelPickerClassNames = {
+  optionItem: 'text-gray-400',
+  highlightWrapper: 'border-y-2 border-blue-500',
+  highlightItem: 'text-black font-bold'
+};
+
+<WheelPicker
+  options={options}
+  classNames={classNames}
+/>
+
+// Tailwind CSS styling
+const tailwindClassNames: WheelPickerClassNames = {
+  optionItem: 'text-sm text-gray-500 transition-colors',
+  highlightWrapper: 'bg-gradient-to-r from-blue-50 to-purple-50 border-y-2 border-blue-400',
+  highlightItem: 'text-lg font-semibold text-blue-900'
+};
+
+<WheelPicker
+  options={options}
+  classNames={tailwindClassNames}
+/>
+```
+
+## WheelPickerProps
+
+Props for the WheelPicker component.
+
+```typescript
+type WheelPickerProps<T extends WheelPickerValue = string> = {
+  /** Initial value of the picker when uncontrolled */
+  defaultValue?: T;
+  /** Current value of the picker when controlled */
+  value?: T;
+  /** Callback fired when the selected value changes */
+  onValueChange?: (value: T) => void;
+
+  /** Array of options to display in the wheel */
+  options: WheelPickerOption<T>[];
+  /** Whether the wheel should loop infinitely */
+  infinite?: boolean;
+  /** The number of options visible on the circular ring, must be a multiple of 4 */
+  visibleCount?: number;
+  /** Sensitivity of the drag interaction (higher = more sensitive) */
+  dragSensitivity?: number;
+  /** Sensitivity of the scroll interaction (higher = more sensitive) */
+  scrollSensitivity?: number;
+  /** Height (in pixels) of each item in the picker list */
+  optionItemHeight?: number;
+  /** Custom class names for styling different parts of the wheel */
+  classNames?: WheelPickerClassNames;
+};
+```
+
+See the [WheelPicker](/api/wheel-picker) documentation for detailed information about each prop.
+
+### Usage Example
+
+```tsx
+import { WheelPickerProps } from 'react-wheel-picker';
+
+// Define props with explicit type
+const pickerProps: WheelPickerProps<number> = {
+  defaultValue: 1,
+  options: [
+    { value: 1, label: 'One' },
+    { value: 2, label: 'Two' },
+    { value: 3, label: 'Three' }
+  ],
+  infinite: true,
+  optionItemHeight: 40,
+  dragSensitivity: 5
+};
+
+<WheelPicker {...pickerProps} />
+
+// Or use inline
+<WheelPicker<number>
+  value={selectedValue}
+  onValueChange={handleChange}
+  options={numberOptions}
+  infinite
+/>
+```
+
+## WheelPickerWrapperProps
+
+Props for the WheelPicker wrapper component.
+
+```typescript
+type WheelPickerWrapperProps = {
+  /** Additional CSS class name for the wrapper */
+  className?: string;
+  /** Child elements to be rendered inside the wrapper */
+  children: ReactNode;
+};
+```
+
+See the [WheelPickerWrapper](/api/wheel-picker-wrapper) documentation for detailed information.
+
+### Usage Example
+
+```tsx
+import { WheelPickerWrapperProps } from 'react-wheel-picker';
+
+// Define props with explicit type
+const wrapperProps: WheelPickerWrapperProps = {
+  className: 'flex gap-4 p-6',
+  children: (
+    <>
+      <WheelPicker options={hours} />
+      <WheelPicker options={minutes} />
+    </>
+  )
+};
+
+<WheelPickerWrapper {...wrapperProps} />
+
+// Or use inline
+<WheelPickerWrapper className="flex gap-2">
+  <WheelPicker options={hours} />
+  <WheelPicker options={minutes} />
+</WheelPickerWrapper>
+```
+
+## Type Inference
+
+The library uses TypeScript generics to provide type safety. When you specify the value type, TypeScript will enforce that type throughout:
+
+```tsx
+// String-based picker - TypeScript ensures all values are strings
+<WheelPicker<string>
+  value="apple"
+  onValueChange={(value) => {
+    // value is inferred as string
+    console.log(value.toUpperCase());
+  }}
+  options={[
+    { value: 'apple', label: 'Apple' },
+    { value: 'orange', label: 'Orange' }
+  ]}
+/>
+
+// Number-based picker - TypeScript ensures all values are numbers
+<WheelPicker<number>
+  value={42}
+  onValueChange={(value) => {
+    // value is inferred as number
+    console.log(value.toFixed(2));
+  }}
+  options={[
+    { value: 1, label: 'One' },
+    { value: 2, label: 'Two' }
+  ]}
+/>
+
+// Type mismatch will cause TypeScript error
+<WheelPicker<number>
+  value="not a number" // Error: Type 'string' is not assignable to type 'number'
+  options={[{ value: 1, label: 'One' }]}
+/>
+```

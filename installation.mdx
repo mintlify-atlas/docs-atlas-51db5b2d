@@ -1,0 +1,316 @@
+---
+title: Installation
+description: Install React Wheel Picker via shadcn/ui or as a standalone package
+---
+
+## Installation Methods
+
+React Wheel Picker can be installed in two ways: via shadcn/ui for a quick setup with pre-styled components, or as a primitives package for complete control over styling.
+
+<CardGroup cols={2}>
+  <Card title="shadcn/ui" icon="wand-magic-sparkles">
+    Quick setup with shadcn CLI and pre-configured styling
+  </Card>
+  <Card title="Primitives" icon="cube">
+    Unstyled components with full customization control
+  </Card>
+</CardGroup>
+
+<Tabs>
+  <Tab title="shadcn/ui">
+    ## Install via shadcn/ui
+
+    The easiest way to get started is using the shadcn CLI. This automatically adds the component to your project with pre-configured styling.
+
+    ```bash
+    npx shadcn add @ncdai/wheel-picker
+    ```
+
+    This command will:
+    - Install the `@ncdai/react-wheel-picker` package
+    - Add the component files to your `components/` directory
+    - Configure default styling that works with your shadcn/ui theme
+
+    ### Configure shadcn MCP Server (Optional)
+
+    Enable AI assistants to understand your component registry:
+
+    ```bash
+    npx shadcn mcp init
+    ```
+
+    <Tip>
+      Learn more about the [shadcn MCP server](https://ui.shadcn.com/docs/mcp) and how it helps AI assistants work with your components.
+    </Tip>
+
+    ### Example AI Prompts
+
+    Once configured, you can use prompts like:
+    - "Create a wheel picker demo from the ncdai registry"
+    - "Create a wheel picker form demo from the ncdai registry"
+
+    ### Import and Use
+
+    After installation, import the components from your local components directory:
+
+    ```tsx
+    import {
+      WheelPicker,
+      WheelPickerWrapper,
+      type WheelPickerOption,
+    } from "@/components/wheel-picker";
+    ```
+
+    ### Basic Usage
+
+    ```tsx
+    import { useState } from "react";
+    import {
+      WheelPicker,
+      WheelPickerWrapper,
+      type WheelPickerOption,
+    } from "@/components/wheel-picker";
+
+    const options: WheelPickerOption[] = [
+      { label: "Next.js", value: "nextjs" },
+      { label: "Vite", value: "vite" },
+      { label: "Remix", value: "remix" },
+    ];
+
+    export function WheelPickerDemo() {
+      const [value, setValue] = useState("nextjs");
+
+      return (
+        <WheelPickerWrapper>
+          <WheelPicker
+            options={options}
+            value={value}
+            onValueChange={setValue}
+          />
+        </WheelPickerWrapper>
+      );
+    }
+    ```
+  </Tab>
+
+  <Tab title="Primitives">
+    ## Install as Primitives
+
+    For complete control over styling, install the primitives package directly:
+
+    <CodeGroup>
+      ```bash npm
+      npm install @ncdai/react-wheel-picker
+      ```
+
+      ```bash yarn
+      yarn add @ncdai/react-wheel-picker
+      ```
+
+      ```bash pnpm
+      pnpm add @ncdai/react-wheel-picker
+      ```
+    </CodeGroup>
+
+    ### Import Styles
+
+    <Steps>
+      <Step title="Import the default CSS">
+        Add the core CSS to your app's entry point (e.g., `src/app/layout.tsx`, `src/main.tsx`, or `src/index.tsx`):
+
+        ```tsx title="src/app/layout.tsx"
+        import "@ncdai/react-wheel-picker/style.css";
+        ```
+
+        <Info>
+          The default CSS includes only basic layout styles. Visual styling is controlled via `classNames` prop or CSS selectors.
+        </Info>
+      </Step>
+
+      <Step title="Import components">
+        Import the components in your React files:
+
+        ```tsx
+        import {
+          WheelPicker,
+          WheelPickerWrapper,
+          type WheelPickerOption,
+        } from "@ncdai/react-wheel-picker";
+        ```
+      </Step>
+    </Steps>
+
+    ### Style with Tailwind CSS
+
+    ```tsx
+    import { useState } from "react";
+    import {
+      WheelPicker,
+      WheelPickerWrapper,
+      type WheelPickerOption,
+    } from "@ncdai/react-wheel-picker";
+
+    const options: WheelPickerOption[] = [
+      { label: "Next.js", value: "nextjs" },
+      { label: "Vite", value: "vite" },
+      { label: "Remix", value: "remix" },
+      { label: "Astro", value: "astro" },
+    ];
+
+    export function WheelPickerDemo() {
+      const [value, setValue] = useState("nextjs");
+
+      return (
+        <WheelPickerWrapper className="w-56 rounded-md border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+          <WheelPicker
+            options={options}
+            value={value}
+            onValueChange={setValue}
+            classNames={{
+              optionItem:
+                "text-zinc-400 dark:text-zinc-500 data-disabled:opacity-40",
+              highlightWrapper:
+                "bg-zinc-100 text-zinc-950 dark:bg-zinc-900 dark:text-zinc-50 data-rwp-focused:ring-2 data-rwp-focused:ring-zinc-300 data-rwp-focused:ring-inset dark:data-rwp-focused:ring-zinc-600",
+              highlightItem: "data-disabled:opacity-40",
+            }}
+          />
+        </WheelPickerWrapper>
+      );
+    }
+    ```
+
+    ### Style with CSS
+
+    Alternatively, use CSS selectors to style the components:
+
+    ```css title="styles/theme.css"
+    [data-rwp-wrapper] {
+      width: 14rem;
+      border-radius: 0.375rem;
+      border: 1px solid #e4e4e7;
+      background-color: #ffffff;
+    }
+
+    [data-rwp-option] {
+      color: #a1a1aa;
+    }
+
+    [data-rwp-highlight-wrapper] {
+      background-color: #f4f4f5;
+      color: #09090b;
+    }
+
+    [data-rwp-highlight-wrapper][data-rwp-focused] {
+      box-shadow: inset 0 0 0 2px #d4d4d8;
+    }
+
+    [data-rwp-option][data-disabled],
+    [data-rwp-highlight-item][data-disabled] {
+      opacity: 0.4;
+    }
+    ```
+
+    Then use the components without additional classNames:
+
+    ```tsx
+    export function WheelPickerDemo() {
+      const [value, setValue] = useState("nextjs");
+
+      return (
+        <WheelPickerWrapper>
+          <WheelPicker
+            options={options}
+            value={value}
+            onValueChange={setValue}
+          />
+        </WheelPickerWrapper>
+      );
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Package Details
+
+<AccordionGroup>
+  <Accordion icon="cube" title="Package Information">
+    - **Package Name**: `@ncdai/react-wheel-picker`
+    - **Version**: 1.2.0
+    - **License**: MIT
+    - **Homepage**: [react-wheel-picker.chanhdai.com](https://react-wheel-picker.chanhdai.com)
+    - **Repository**: [github.com/ncdai/react-wheel-picker](https://github.com/ncdai/react-wheel-picker)
+  </Accordion>
+
+  <Accordion icon="code" title="Module Formats">
+    The package supports both CommonJS and ES modules:
+    - **CommonJS**: `dist/index.js`
+    - **ESM**: `dist/index.mjs`
+    - **TypeScript**: Full type definitions included
+  </Accordion>
+
+  <Accordion icon="puzzle-piece" title="Peer Dependencies">
+    React Wheel Picker requires React 16.8 or higher:
+    ```json
+    {
+      "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0"
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Verify Installation
+
+To verify the installation was successful, create a simple test component:
+
+```tsx title="app/test-picker.tsx"
+import { useState } from "react";
+import {
+  WheelPicker,
+  WheelPickerWrapper,
+  type WheelPickerOption,
+} from "@ncdai/react-wheel-picker";
+
+const testOptions: WheelPickerOption[] = [
+  { label: "Option 1", value: "1" },
+  { label: "Option 2", value: "2" },
+  { label: "Option 3", value: "3" },
+];
+
+export function TestPicker() {
+  const [value, setValue] = useState("1");
+
+  return (
+    <div>
+      <h2>Selected: {value}</h2>
+      <WheelPickerWrapper>
+        <WheelPicker
+          options={testOptions}
+          value={value}
+          onValueChange={setValue}
+        />
+      </WheelPickerWrapper>
+    </div>
+  );
+}
+```
+
+<Check>
+  If the component renders without errors, the installation is successful!
+</Check>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start Guide" icon="rocket" href="/quickstart">
+    Learn how to build your first wheel picker
+  </Card>
+  <Card title="API Reference" icon="book" href="/api/wheel-picker">
+    Explore all available props and options
+  </Card>
+  <Card title="Examples" icon="code" href="https://react-wheel-picker.chanhdai.com#examples">
+    See real-world examples and use cases
+  </Card>
+  <Card title="TypeScript Support" icon="code" href="/api/types">
+    Learn about type definitions and generics
+  </Card>
+</CardGroup>

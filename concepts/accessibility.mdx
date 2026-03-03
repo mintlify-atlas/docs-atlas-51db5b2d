@@ -1,0 +1,410 @@
+---
+title: Accessibility Features
+description: Understanding the accessibility features and WCAG compliance of React Wheel Picker
+---
+
+## Overview
+
+React Wheel Picker is built with accessibility in mind, providing comprehensive keyboard navigation, focus management, and proper semantic structure for assistive technologies.
+
+## Keyboard Navigation Support
+
+The component provides full keyboard navigation support for users who cannot or prefer not to use a mouse.
+
+### Supported Keys
+
+| Key | Action |
+|-----|--------|
+| `Arrow Up` | Move to previous item |
+| `Arrow Down` | Move to next item |
+| `Arrow Left` | Navigate to previous picker (in group) |
+| `Arrow Right` | Navigate to next picker (in group) |
+| `Home` | Jump to first item (non-infinite mode) |
+| `End` | Jump to last item (non-infinite mode) |
+| `A-Z`, `0-9` | Type-ahead search |
+
+<Info>
+All keyboard navigation automatically skips disabled items and finds the nearest enabled option.
+</Info>
+
+### Implementation Details
+
+Keyboard handling is implemented in the `handleKeyDown` callback:
+
+```typescript
+const handleKeyDown = useCallback(
+  (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!options.length) return;
+
+    // Vertical navigation
+    const handleVerticalNavigation = (direction: 1 | -1) => {
+      event.preventDefault();
+      
+      let targetIndex = Math.round(scrollRef.current) + direction;
+      
+      // Check bounds for non-infinite mode
+      if (!infinite) {
+        if (direction === -1 && targetIndex < 0) return;
+        if (direction === 1 && targetIndex >= options.length) return;
+      }
+      
+      // Skip disabled items
+      if (options[targetIndex]?.disabled) {
+        const nearestEnabled = findNearestEnabledIndex(
+          targetIndex,
+          direction,
+          options,
+          infinite
+        );
+        targetIndex = nearestEnabled;
+      }
+      
+      scrollByStep(targetIndex - Math.round(scrollRef.current));
+    };
+    
+    // ... handler mapping and execution
+  },
+  [options, infinite]
+);
+```
+
+## Focus Management
+
+The component implements proper focus management for single and grouped pickers.
+
+### Single Picker Focus
+
+A standalone picker has `tabIndex={0}` and is focusable:
+
+```tsx
+<WheelPicker options={options} />
+// tabIndex is 0, can receive focus via Tab key
+```
+
+### Group Focus Management
+
+When multiple pickers are in a `WheelPickerWrapper`, only the active picker is focusable:
+
+```typescript
+const pickerIndex = pickerIndexRef.current;
+const activeIndex = group?.activeIndex ?? -1;
+const tabIndex = group && pickerIndex !== -1 
+  ? (activeIndex === pickerIndex ? 0 : -1) 
+  : 0;
+```
+
+**Behavior:**
+- First picker in a group is active by default
+- `Tab` key moves focus to the active picker
+- Arrow Left/Right moves between pickers in the group
+- Inactive pickers have `tabIndex="-1"` and are not focusable via Tab
+
+<CodeGroup>
+```tsx Example
+<WheelPickerWrapper>
+  <WheelPicker options={hours} />    {/* tabIndex=0 when active */}
+  <WheelPicker options={minutes} />  {/* tabIndex=-1 when inactive */}
+  <WheelPicker options={seconds} />  {/* tabIndex=-1 when inactive */}
+</WheelPickerWrapper>
+```
+
+```typescript Focus Callback
+const handleFocus = useCallback(() => {
+  setIsFocused(true);
+  const pickerIndex = pickerIndexRef.current;
+  if (group && pickerIndex !== -1) {
+    group.setActiveIndex(pickerIndex);
+  }
+}, [group]);
+```
+</CodeGroup>
+
+### Focus Indicators
+
+The picker provides a visual focus indicator through the `data-rwp-focused` attribute:
+
+```tsx
+<div
+  data-rwp-highlight-wrapper
+  data-rwp-focused={isFocused || undefined}
+>
+  {/* highlight area */}
+</div>
+```
+
+Style the focus state:
+
+```css
+[data-rwp]:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+[data-rwp-highlight-wrapper][data-rwp-focused] {
+  box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+```
+
+<Warning>
+Always provide a visible focus indicator. Never use `outline: none` without an alternative focus style.
+</Warning>
+
+## Type-Ahead Search
+
+The component includes type-ahead search for keyboard-only users to quickly find options.
+
+### How It Works
+
+1. **Single character** - Cycles through options starting with that character
+2. **Multiple characters** - Finds first match from the beginning
+3. **Timeout** - Search buffer resets after 500ms
+4. **Disabled items** - Automatically skipped
+
+### Implementation
+
+From `use-typeahead-search.ts:46`:
+
+```typescript
+const handleTypeaheadSearch = useCallback(
+  (char: string) => {
+    // Append to search buffer
+    searchBufferRef.current += char.toLowerCase();
+    const searchTerm = searchBufferRef.current;
+    
+    // Check if all characters are the same ("aaa")
+    const isRepeated = 
+      searchTerm.length > 1 &&
+      Array.from(searchTerm).every((c) => c === searchTerm[0]);
+    
+    // Normalize for cycling
+    const normalizedSearch = isRepeated ? searchTerm[0] : searchTerm;
+    
+    // Cycle through matches or find first match
+    const shouldCycle = normalizedSearch.length === 1;
+    
+    if (shouldCycle) {
+      // Search from after current position
+      for (let i = 1; i <= options.length; i++) {
+        const index = (currentIndex + i) % options.length;
+        const text = getTextValue(options[index]);
+        if (text.toLowerCase().startsWith(normalizedSearch)) {
+          onMatch(index);
+          break;
+        }
+      }
+    } else {
+      // Find first match from beginning
+      const matchIndex = options.findIndex((option) => {
+        const text = getTextValue(option);
+        return text.toLowerCase().startsWith(normalizedSearch);
+      });
+      if (matchIndex !== -1) onMatch(matchIndex);
+    }
+    
+    // Reset after timeout
+    timeoutRef.current = setTimeout(() => {
+      searchBufferRef.current = "";
+    }, TYPEAHEAD_TIMEOUT_MS);
+  },
+  [options, getCurrentIndex, onMatch]
+);
+```
+
+### Customizing Search Text
+
+Use the `textValue` property when your label is not a string:
+
+```tsx
+const options = [
+  {
+    value: 'us',
+    label: <><Flag country="US" /> United States</>,
+    textValue: 'United States', // Used for search
+  },
+  {
+    value: 'uk',
+    label: <><Flag country="UK" /> United Kingdom</>,
+    textValue: 'United Kingdom',
+  },
+];
+```
+
+## Disabled Items
+
+Disabled items are properly handled for accessibility:
+
+### Marking Items as Disabled
+
+```tsx
+const options = [
+  { value: '1', label: 'Option 1' },
+  { value: '2', label: 'Option 2', disabled: true },
+  { value: '3', label: 'Option 3' },
+];
+```
+
+### DOM Attributes
+
+Disabled items receive the `data-disabled` attribute:
+
+```html
+<li data-rwp-option data-disabled>
+  Option 2
+</li>
+```
+
+### Pointer Events
+
+Disabled items have `pointer-events: none` applied:
+
+```css
+[data-rwp-option][data-disabled],
+[data-rwp-highlight-item][data-disabled] {
+  pointer-events: none;
+}
+```
+
+### Keyboard Navigation
+
+Disabled items are automatically skipped:
+
+```typescript
+const findNearestEnabledIndex = (
+  startIndex: number,
+  direction: 1 | -1,
+  options: WheelPickerOption<T>[],
+  infinite: boolean
+): number => {
+  // Check if all items are disabled
+  const hasEnabledItem = options.some((opt) => !opt.disabled);
+  if (!hasEnabledItem) return startIndex;
+  
+  // Search in direction for enabled item
+  let currentIndex = startIndex;
+  while (/* within bounds */) {
+    currentIndex = currentIndex + direction;
+    
+    if (!options[currentIndex]?.disabled) {
+      return currentIndex;
+    }
+  }
+  
+  return startIndex;
+};
+```
+
+<Tip>
+Always provide visual feedback for disabled items using CSS to differentiate them from enabled options.
+</Tip>
+
+## Screen Reader Support
+
+### Current Implementation
+
+The component uses semantic HTML:
+- `<div>` with `tabIndex` for the focusable container
+- `<ul>` and `<li>` for option lists
+- Data attributes for state indication
+
+### Recommended ARIA Enhancement
+
+For better screen reader support, consider wrapping with ARIA attributes:
+
+```tsx
+<div role="group" aria-label="Time picker">
+  <WheelPickerWrapper>
+    <div role="listbox" aria-label="Hours">
+      <WheelPicker 
+        options={hours}
+        // Add aria-activedescendant for current selection
+      />
+    </div>
+    <div role="listbox" aria-label="Minutes">
+      <WheelPicker options={minutes} />
+    </div>
+  </WheelPickerWrapper>
+</div>
+```
+
+<Note>
+Future versions may include built-in ARIA attributes. Currently, you can add them to the wrapper components.
+</Note>
+
+## Best Practices
+
+### 1. Always Provide Focus Indicators
+
+```css
+[data-rwp]:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+```
+
+### 2. Use Sufficient Color Contrast
+
+Ensure text meets WCAG AA standards (4.5:1 contrast ratio):
+
+```css
+/* Good contrast */
+[data-rwp-option] {
+  color: #666; /* On white background */
+}
+
+[data-rwp-highlight-item] {
+  color: #000; /* Even better contrast */
+}
+```
+
+### 3. Clearly Indicate Disabled Items
+
+```css
+[data-rwp-option][data-disabled] {
+  opacity: 0.4;
+  color: #999;
+}
+```
+
+### 4. Provide Context for Groups
+
+```tsx
+<fieldset>
+  <legend>Select Time</legend>
+  <WheelPickerWrapper>
+    <WheelPicker options={hours} aria-label="Hours" />
+    <WheelPicker options={minutes} aria-label="Minutes" />
+  </WheelPickerWrapper>
+</fieldset>
+```
+
+### 5. Test with Keyboard Only
+
+Ensure all functionality is available:
+- Tab to focus the picker
+- Arrow keys to navigate options
+- Type-ahead to search
+- No keyboard traps
+
+### 6. Test with Screen Readers
+
+Verify with popular screen readers:
+- NVDA (Windows)
+- JAWS (Windows)
+- VoiceOver (macOS/iOS)
+- TalkBack (Android)
+
+## WCAG Compliance
+
+React Wheel Picker helps you meet WCAG 2.1 Level AA criteria:
+
+| Criterion | Status | Notes |
+|-----------|--------|-------|
+| 2.1.1 Keyboard | ✅ Supported | Full keyboard navigation |
+| 2.1.2 No Keyboard Trap | ✅ Supported | Focus can move freely |
+| 2.4.7 Focus Visible | ⚠️ Customizable | Must add focus styles |
+| 3.2.1 On Focus | ✅ Supported | No context change on focus |
+| 4.1.2 Name, Role, Value | ⚠️ Enhancement | Consider adding ARIA |
+
+<Info>
+The component provides the foundation for WCAG compliance. Proper styling and optional ARIA attributes are your responsibility.
+</Info>
